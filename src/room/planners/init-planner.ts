@@ -486,56 +486,79 @@ function findExitAndPlanWalls(exit: ExitConstant, room: Room): boolean {
       if (exitSize === 0) {
         if (isX) {
           if (room.isSpotOpen(new RoomPosition(x - 1, y, room.name))) {
-            room.memory.sites[2][x - 1 + ":" + y] = STRUCTURE_WALL;
+            (room.memory.sites[2] as Map<string, StructureConstant>)[
+              <string>(<unknown>(x - 1)) + ":" + <string>(<unknown>y)
+            ] = STRUCTURE_WALL;
           }
           if (room.isSpotOpen(new RoomPosition(x - 1, y, room.name))) {
-            room.memory.sites[2][x - 2 + ":" + y] = STRUCTURE_WALL;
+            (room.memory.sites[2] as Map<string, StructureConstant>)[
+              <string>(<unknown>(x - 2)) + ":" + <string>(<unknown>y)
+            ] = STRUCTURE_WALL;
           }
           const newY = y === 2 ? 1 : 48;
           if (room.isSpotOpen(new RoomPosition(x - 1, newY, room.name))) {
-            room.memory.sites[2][x - 2 + ":" + newY] = STRUCTURE_WALL;
+            (room.memory.sites[2] as Map<string, StructureConstant>)[
+              <string>(<unknown>(x - 2)) + ":" + <string>(<unknown>newY)
+            ] = STRUCTURE_WALL;
           }
         } else {
           if (room.isSpotOpen(new RoomPosition(x, y - 1, room.name))) {
-            room.memory.sites[2][x + ":" + (y - 1)] = STRUCTURE_WALL;
+            (room.memory.sites[2] as Map<string, StructureConstant>)[
+              <string>(<unknown>x) + ":" + <string>(<unknown>(y - 1))
+            ] = STRUCTURE_WALL;
           }
           if (room.isSpotOpen(new RoomPosition(x, y - 1, room.name))) {
-            room.memory.sites[2][x + ":" + (y - 2)] = STRUCTURE_WALL;
+            (room.memory.sites[2] as Map<string, StructureConstant>)[
+              <string>(<unknown>x) + ":" + <string>(<unknown>(y - 2))
+            ] = STRUCTURE_WALL;
           }
           const newX = x === 2 ? 1 : 48;
           if (room.isSpotOpen(new RoomPosition(newX, y - 1, room.name))) {
-            room.memory.sites[2][newX + ":" + (y - 2)] = STRUCTURE_WALL;
+            (room.memory.sites[2] as Map<string, StructureConstant>)[
+              <string>(<unknown>newX) + ":" + <string>(<unknown>(y - 2))
+            ] = STRUCTURE_WALL;
           }
         }
       }
       exitSize += 1;
       if (isRampart) {
-        room.memory.sites2[x + ":" + y] = STRUCTURE_RAMPART;
+        room.memory.sites2[<string>(<unknown>x) + ":" + <string>(<unknown>y)] = STRUCTURE_RAMPART;
       } else {
-        room.memory.sites[2][x + ":" + y] = STRUCTURE_WALL;
+        (room.memory.sites[2] as Map<string, StructureConstant>)[<string>(<unknown>x) + ":" + <string>(<unknown>y)] =
+          STRUCTURE_WALL;
       }
     } else if (exitSize) {
       if (isX) {
         if (room.isSpotOpen(new RoomPosition(x, y, room.name))) {
-          room.memory.sites[2][x + ":" + y] = STRUCTURE_WALL;
+          (room.memory.sites[2] as Map<string, StructureConstant>)[<string>(<unknown>x) + ":" + <string>(<unknown>y)] =
+            STRUCTURE_WALL;
         }
         if (room.isSpotOpen(new RoomPosition(x + 1, y, room.name))) {
-          room.memory.sites[2][x + 1 + ":" + y] = STRUCTURE_WALL;
+          (room.memory.sites[2] as Map<string, StructureConstant>)[
+            <string>(<unknown>(x + 1)) + ":" + <string>(<unknown>y)
+          ] = STRUCTURE_WALL;
         }
         const newY = y === 2 ? 1 : 48;
         if (room.isSpotOpen(new RoomPosition(x + 1, newY, room.name))) {
-          room.memory.sites[2][x + 1 + ":" + newY] = STRUCTURE_WALL;
+          (room.memory.sites[2] as Map<string, StructureConstant>)[
+            <string>(<unknown>(x + 1)) + ":" + <string>(<unknown>newY)
+          ] = STRUCTURE_WALL;
         }
       } else {
         if (room.isSpotOpen(new RoomPosition(x, y, room.name))) {
-          room.memory.sites[2][x + ":" + y] = STRUCTURE_WALL;
+          (room.memory.sites[2] as Map<string, StructureConstant>)[<string>(<unknown>x) + ":" + <string>(<unknown>y)] =
+            STRUCTURE_WALL;
         }
         if (room.isSpotOpen(new RoomPosition(x, y + 1, room.name))) {
-          room.memory.sites[2][x + ":" + (y + 1)] = STRUCTURE_WALL;
+          (room.memory.sites[2] as Map<string, StructureConstant>)[
+            <string>(<unknown>x) + ":" + <string>(<unknown>(y + 1))
+          ] = STRUCTURE_WALL;
         }
         const newX = x === 2 ? 1 : 48;
         if (room.isSpotOpen(new RoomPosition(newX, y + 1, room.name))) {
-          room.memory.sites[2][newX + ":" + (y + 1)] = STRUCTURE_WALL;
+          (room.memory.sites[2] as Map<string, StructureConstant>)[
+            <string>(<unknown>newX) + ":" + <string>(<unknown>(y + 1))
+          ] = STRUCTURE_WALL;
         }
       }
       exits.push(dynamicCoord - Math.round(exitSize / 2));
@@ -544,21 +567,33 @@ function findExitAndPlanWalls(exit: ExitConstant, room: Room): boolean {
     exitExists = exitExists || spotHasNoWall;
   }
 
-  for (let exitIndex = 0; exitIndex < exits.length; exitIndex++) {
+  for (const exit of exits) {
     if (isX) {
-      delete room.memory.sites[2][exits[exitIndex] - 1 + ":" + y];
-      delete room.memory.sites[2][exits[exitIndex] + ":" + y];
-      delete room.memory.sites[2][exits[exitIndex] + 1 + ":" + y];
-      room.memory.sites2[exits[exitIndex] - 1 + ":" + y] = STRUCTURE_RAMPART;
-      room.memory.sites2[exits[exitIndex] + ":" + y] = STRUCTURE_RAMPART;
-      room.memory.sites2[exits[exitIndex] + 1 + ":" + y] = STRUCTURE_RAMPART;
+      delete (room.memory.sites[2] as Map<string, StructureConstant>)[
+        <string>(<unknown>(exit - 1)) + ":" + <string>(<unknown>y)
+      ];
+      delete (room.memory.sites[2] as Map<string, StructureConstant>)[
+        <string>(<unknown>exit) + ":" + <string>(<unknown>y)
+      ];
+      delete (room.memory.sites[2] as Map<string, StructureConstant>)[
+        <string>(<unknown>(exit + 1)) + ":" + <string>(<unknown>y)
+      ];
+      room.memory.sites2[<string>(<unknown>(exit - 1)) + ":" + <string>(<unknown>y)] = STRUCTURE_RAMPART;
+      room.memory.sites2[<string>(<unknown>exit) + ":" + <string>(<unknown>y)] = STRUCTURE_RAMPART;
+      room.memory.sites2[<string>(<unknown>(exit + 1)) + ":" + <string>(<unknown>y)] = STRUCTURE_RAMPART;
     } else {
-      delete room.memory.sites[2][x + ":" + (exits[exitIndex] - 1)];
-      delete room.memory.sites[2][x + ":" + exits[exitIndex]];
-      delete room.memory.sites[2][x + ":" + (exits[exitIndex] + 1)];
-      room.memory.sites2[x + ":" + (exits[exitIndex] - 1)] = STRUCTURE_RAMPART;
-      room.memory.sites2[x + ":" + exits[exitIndex]] = STRUCTURE_RAMPART;
-      room.memory.sites2[x + ":" + (exits[exitIndex] + 1)] = STRUCTURE_RAMPART;
+      delete (room.memory.sites[2] as Map<string, StructureConstant>)[
+        <string>(<unknown>x) + ":" + <string>(<unknown>(exit - 1))
+      ];
+      delete (room.memory.sites[2] as Map<string, StructureConstant>)[
+        <string>(<unknown>x) + ":" + <string>(<unknown>exit)
+      ];
+      delete (room.memory.sites[2] as Map<string, StructureConstant>)[
+        <string>(<unknown>x) + ":" + <string>(<unknown>(exit + 1))
+      ];
+      room.memory.sites2[<string>(<unknown>x) + ":" + <string>(<unknown>(exit - 1))] = STRUCTURE_RAMPART;
+      room.memory.sites2[<string>(<unknown>x) + ":" + <string>(<unknown>exit)] = STRUCTURE_RAMPART;
+      room.memory.sites2[<string>(<unknown>x) + ":" + <string>(<unknown>(exit + 1))] = STRUCTURE_RAMPART;
     }
   }
   return exitExists;
@@ -566,7 +601,7 @@ function findExitAndPlanWalls(exit: ExitConstant, room: Room): boolean {
 
 function getPlannedCostMatrix(room: Room) {
   return (roomName: string, costMatrix: CostMatrix): CostMatrix => {
-    if (roomName == room.name) {
+    if (roomName === room.name && room.memory.sites !== undefined) {
       for (let i = 0; i < 9; i++) {
         _.forEach(room.memory.sites[i], (value, key) => {
           if (value !== STRUCTURE_ROAD && key) {
@@ -583,19 +618,22 @@ function planRoadAlongPath(room: Room, path: Array<PathStep>) {
   if (path != null && path.length > 0) {
     _.forEach(path, (pathStep: PathStep) => {
       if (
+        room.memory.sites !== undefined &&
         pathStep.x !== 0 &&
         pathStep.y !== 0 &&
         pathStep.x !== 49 &&
         pathStep.y !== 49 &&
         !Planner.hasPlannedStructureAt(new RoomPosition(pathStep.x, pathStep.y, room.name), true)
       ) {
-        room.memory.sites[0][pathStep.x + ":" + pathStep.y] = STRUCTURE_ROAD;
+        (room.memory.sites[0] as Map<string, StructureConstant>)[
+          <string>(<unknown>pathStep.x) + ":" + <string>(<unknown>pathStep.y)
+        ] = STRUCTURE_ROAD;
       }
     });
   }
 }
 
-function loopFromCenter(room: Room, x: number, y: number, size: number, callback: Function) {
+function loopFromCenter(room: Room, x: number, y: number, size: number, callback: (x: number, y: number) => boolean) {
   let d = 3;
   let c = 0;
   let s = 1;
@@ -633,15 +671,15 @@ function loopFromCenter(room: Room, x: number, y: number, size: number, callback
 function getPositionPlusShapeBuffer(room: Room, type: StructureConstant): ConstructionSiteData | null {
   const center: RoomPosition = room.memory.center;
   if (!room.memory.loopCenter) {
-    room.memory.loopCenter = {};
+    room.memory.loopCenter = new Map<string, boolean>();
   }
   const size: number = 38 - 2 * Math.max(Math.abs(center.x - 25), Math.abs(center.y - 25));
   let siteFound: ConstructionSiteData | null = null;
   loopFromCenter(room, center.x, center.y, size, (currentX: number, currentY: number) => {
-    if (room.memory.loopCenter[currentX + ":" + currentY]) {
+    if (room.memory.loopCenter[<string>(<unknown>currentX) + ":" + <string>(<unknown>currentY)]) {
       return false;
     }
-    room.memory.loopCenter[currentX + ":" + currentY] = true;
+    room.memory.loopCenter[<string>(<unknown>currentX) + ":" + <string>(<unknown>currentY)] = true;
     let positionOk = true;
     const currentPlannedPosition: RoomPosition = new RoomPosition(currentX, currentY, room.name);
     if (
@@ -675,15 +713,15 @@ function getPositionPlusShapeBuffer(room: Room, type: StructureConstant): Constr
 function getPositionWithBuffer(room: Room, buffer: number, type: StructureConstant): ConstructionSiteData | null {
   const center: RoomPosition = room.memory.center;
   if (!room.memory.loopCenter) {
-    room.memory.loopCenter = {};
+    room.memory.loopCenter = new Map<string, boolean>();
   }
   const size: number = 38 - 2 * Math.max(Math.abs(center.x - 25), Math.abs(center.y - 25));
   let siteFound: ConstructionSiteData | null = null;
   loopFromCenter(room, center.x, center.y, size, (currentX: number, currentY: number) => {
-    if (room.memory.loopCenter[currentX + ":" + currentY]) {
+    if (room.memory.loopCenter[<string>(<unknown>currentX) + ":" + <string>(<unknown>currentY)]) {
       return false;
     }
-    room.memory.loopCenter[currentX + ":" + currentY] = true;
+    room.memory.loopCenter[<string>(<unknown>currentX) + ":" + <string>(<unknown>currentY)] = true;
     let positionOk = true;
     const currentPlannedPosition: RoomPosition = new RoomPosition(currentX, currentY, room.name);
     if (
@@ -727,18 +765,24 @@ function planBuildings(room: Room, structureType: StructureConstant) {
   let numberAlreadyPlanned = 0;
   _.forEach(alreadyPlaced, (s: Structure) => {
     for (let i = 0; i < 9; i++) {
-      if (numberAlreadyPlanned < CONTROLLER_STRUCTURES[structureType][i]) {
+      if (
+        numberAlreadyPlanned < (CONTROLLER_STRUCTURES[structureType] as { [p: number]: number })[i] &&
+        room.memory.sites !== undefined
+      ) {
         numberAlreadyPlanned++;
-        room.memory.sites[i][s.pos.x + ":" + s.pos.y] = structureType;
+        (room.memory.sites[i] as Map<string, StructureConstant>)[
+          <string>(<unknown>s.pos.x) + ":" + <string>(<unknown>s.pos.y)
+        ] = structureType;
         if (
-          structureType === STRUCTURE_SPAWN ||
-          structureType === STRUCTURE_STORAGE ||
-          structureType === STRUCTURE_TOWER ||
-          structureType === STRUCTURE_LINK ||
-          structureType === STRUCTURE_TERMINAL ||
-          structureType === STRUCTURE_LAB
+          room.memory.sites2 !== undefined &&
+          (structureType === STRUCTURE_SPAWN ||
+            structureType === STRUCTURE_STORAGE ||
+            structureType === STRUCTURE_TOWER ||
+            structureType === STRUCTURE_LINK ||
+            structureType === STRUCTURE_TERMINAL ||
+            structureType === STRUCTURE_LAB)
         ) {
-          room.memory.sites2[s.pos.x + ":" + s.pos.y] = STRUCTURE_RAMPART;
+          room.memory.sites2[<string>(<unknown>s.pos.x) + ":" + <string>(<unknown>s.pos.y)] = STRUCTURE_RAMPART;
         }
         return;
       }
@@ -746,16 +790,18 @@ function planBuildings(room: Room, structureType: StructureConstant) {
   });
   let numberPlaced = alreadyPlaced.length;
   for (let i = 0; i < 9; i++) {
-    while (numberPlaced < CONTROLLER_STRUCTURES[structureType][i]) {
+    while (numberPlaced < (CONTROLLER_STRUCTURES[structureType] as { [p: number]: number })[i]) {
       numberPlaced++;
       let constructionSiteData: ConstructionSiteData | null = null;
-      if (structureType == STRUCTURE_EXTENSION) {
+      if (structureType === STRUCTURE_EXTENSION) {
         constructionSiteData = getPositionPlusShapeBuffer(room, structureType);
       } else {
         constructionSiteData = getPositionWithBuffer(room, 1, structureType);
       }
-      if (constructionSiteData) {
-        room.memory.sites[i][constructionSiteData.pos.x + ":" + constructionSiteData.pos.y] = structureType;
+      if (constructionSiteData && room.memory.sites !== undefined) {
+        (room.memory.sites[i] as Map<string, StructureConstant>)[
+          <string>(<unknown>constructionSiteData.pos.x) + ":" + <string>(<unknown>constructionSiteData.pos.y)
+        ] = structureType;
       }
     }
   }
