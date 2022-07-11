@@ -217,48 +217,8 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       return;
     }
 
-    if (!this.room.memory.sources || !Memory.roomData || !Memory.roomData[this.room.name]) {
-      this.room.memory.sources = { sources: new Map<string, number>() } as SourceMemory;
-      const sources = this.room.find(FIND_SOURCES);
-      if (!Memory.roomData) {
-        Memory.roomData = new Map<string, GlobalRoomMemory>();
-      }
-      if (!Memory.roomData[this.room.name]) {
-        Memory.roomData[this.room.name] = {};
-      }
-      (Memory.roomData[this.room.name] as GlobalRoomMemory).sources = {
-        sources: new Map<string, number>(),
-        qty: sources.length
-      };
-      let totalSourceSpots = 0;
-      _.forEach(sources, (source: Source) => {
-        const currentNumberOfSpots = this.room.getNumberOfMiningSpacesAtSource(source.id);
-        totalSourceSpots += currentNumberOfSpots;
-        if (!this.room.memory.sources) {
-          this.room.memory.sources = {} as SourceMemory;
-        }
-        if (!this.room.memory.sources.sources) {
-          this.room.memory.sources.sources = new Map<string, number>();
-        }
-        this.room.memory.sources.sources[source.id] = currentNumberOfSpots;
-      });
-      if (Memory.roomData.get(this.room.name)?.sources) {
-        (Memory.roomData[this.room.name] as GlobalRoomMemory).sources.spots = totalSourceSpots;
-      }
+    if (this.populateSourcesMemory(this.room)) {
       return;
-    }
-    if (!this.room.memory.sources.sources) {
-      const sources = this.room.find(FIND_SOURCES);
-      let totalSourceSpots = 0;
-      _.forEach(sources, (source: Source) => {
-        const currentNumberOfSpots = this.room.getNumberOfMiningSpacesAtSource(source.id);
-        totalSourceSpots += currentNumberOfSpots;
-        if (!this.room.memory.sources?.sources) {
-          this.room.memory.sources = {} as SourceMemory;
-        }
-        this.room.memory.sources.sources[source.id] = currentNumberOfSpots;
-      });
-      (Memory.roomData[this.room.name] as GlobalRoomMemory).sources.spots = totalSourceSpots;
     }
 
     if (
@@ -288,32 +248,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       return;
     }
 
-    if (!this.room.memory.containerStructure) {
-      const sources = this.room.find(FIND_SOURCES);
-      const containerLocationsNeeded = new Array<RoomObject>();
-      let linkNumber = 5;
-      _.forEach(sources, (source: Source) => {
-        this.placeContainerAndLink(source.pos, linkNumber);
-        linkNumber++;
-        containerLocationsNeeded.push(source);
-      });
-      if (this.room.controller) {
-        containerLocationsNeeded.push(this.room.controller);
-        this.placeContainerAndLink(this.room.controller.pos, 5);
-      }
-      this.room.memory.center = <RoomPosition>this.room.getPositionAt(25, 25);
-      if (containerLocationsNeeded.length) {
-        this.room.memory.center = this.getCenterOfArray(containerLocationsNeeded, this.room);
-      }
-
-      const minerals: Array<Mineral> = this.room.find(FIND_MINERALS);
-      if (minerals.length && this.room.memory.sites.get(6) !== undefined) {
-        (this.room.memory.sites.get(6) as Map<string, StructureConstant>).set(
-          <string>(<unknown>minerals[0].pos.x) + ":" + <string>(<unknown>minerals[0].pos.y),
-          STRUCTURE_EXTRACTOR
-        );
-      }
-      this.room.memory.containerStructure = true;
+    if (this.populateContainerMemory(this.room)) {
       return;
     }
 
@@ -669,13 +604,16 @@ function loopFromCenter(room: Room, x: number, y: number, size: number, callback
 }
 
 function getPositionPlusShapeBuffer(room: Room, type: StructureConstant): ConstructionSiteData | null {
-  const center: RoomPosition = room.memory.center;
+  const center: RoomPosition = <RoomPosition>room.memory.center;
   if (!room.memory.loopCenter) {
     room.memory.loopCenter = new Map<string, boolean>();
   }
   const size: number = 38 - 2 * Math.max(Math.abs(center.x - 25), Math.abs(center.y - 25));
   let siteFound: ConstructionSiteData | null = null;
   loopFromCenter(room, center.x, center.y, size, (currentX: number, currentY: number) => {
+    if (!room.memory.loopCenter) {
+      room.memory.loopCenter = new Map<string, boolean>();
+    }
     if (room.memory.loopCenter[<string>(<unknown>currentX) + ":" + <string>(<unknown>currentY)]) {
       return false;
     }
@@ -711,13 +649,16 @@ function getPositionPlusShapeBuffer(room: Room, type: StructureConstant): Constr
 }
 
 function getPositionWithBuffer(room: Room, buffer: number, type: StructureConstant): ConstructionSiteData | null {
-  const center: RoomPosition = room.memory.center;
+  const center: RoomPosition = <RoomPosition>room.memory.center;
   if (!room.memory.loopCenter) {
     room.memory.loopCenter = new Map<string, boolean>();
   }
   const size: number = 38 - 2 * Math.max(Math.abs(center.x - 25), Math.abs(center.y - 25));
   let siteFound: ConstructionSiteData | null = null;
   loopFromCenter(room, center.x, center.y, size, (currentX: number, currentY: number) => {
+    if (!room.memory.loopCenter) {
+      room.memory.loopCenter = new Map<string, boolean>();
+    }
     if (room.memory.loopCenter[<string>(<unknown>currentX) + ":" + <string>(<unknown>currentY)]) {
       return false;
     }
