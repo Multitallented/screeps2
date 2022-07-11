@@ -42,7 +42,7 @@ const moveToTarget = function (this: Creep) {
     return;
   }
   if (moveMessage !== ERR_TIRED) {
-    if (this.memory.prevPos && this.memory.prevPos.x == this.pos.x && this.memory.prevPos.y == this.pos.y) {
+    if (this.memory.prevPos && this.memory.prevPos.x === this.pos.x && this.memory.prevPos.y === this.pos.y) {
       delete this.memory.prevPos;
       delete this.memory._move;
       this.moveToTarget();
@@ -52,15 +52,11 @@ const moveToTarget = function (this: Creep) {
   }
 };
 
-const goGetEnergy = function (
-  this: Overwrite<Creep, { memory: GenericCreepMemory }>,
-  hasWorkComponent: boolean,
-  findHighest: boolean
-) {
+const goGetEnergy = function (this: Creep, hasWorkComponent: boolean, findHighest: boolean) {
   let closestContainer: Structure[] | Structure | null = null;
   if (findHighest) {
     if (this.room.memory && !this.room.memory.ccontainer && this.room.controller) {
-      let closestControllerContainer: Structure | null = null;
+      let closestControllerContainer: StructureContainer | null = null;
       let closestDistance = 99;
       _.forEach(
         this.room.find(FIND_STRUCTURES, {
@@ -68,7 +64,7 @@ const goGetEnergy = function (
             return s.structureType === STRUCTURE_CONTAINER;
           }
         }),
-        (s: Structure) => {
+        (s: StructureContainer) => {
           if (!this.room.controller) {
             return;
           }
@@ -80,7 +76,7 @@ const goGetEnergy = function (
         }
       );
       if (closestControllerContainer && closestDistance < 5) {
-        this.room.memory.ccontainer = closestControllerContainer.id;
+        this.room.memory.ccontainer = (closestControllerContainer as StructureContainer).id;
       }
     }
     closestContainer = _.sortBy(
@@ -88,12 +84,12 @@ const goGetEnergy = function (
         filter: (s: Structure) => {
           return (
             (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
-            s.store.energy > 0 &&
-            (!this.room.memory.ccontainer || s.id != this.room.memory.ccontainer)
+            (s as StructureContainer).store.energy > 0 &&
+            (!this.room.memory.ccontainer || s.id !== this.room.memory.ccontainer)
           );
         }
       }),
-      (s: Structure) => {
+      (s: StructureContainer) => {
         return -1 * s.store.energy;
       }
     );
@@ -102,15 +98,15 @@ const goGetEnergy = function (
     } else {
       closestContainer = _.sortBy(
         this.room.find(FIND_STRUCTURES, {
-          filter: (s: Structure) => {
+          filter: (s: StructureLink) => {
             return (
               s.structureType === STRUCTURE_LINK &&
               s.store.energy > 0 &&
-              (s.room.memory.closestLink == null || s.room.memory.closestLink != s.id)
+              (s.room.memory.closestLink == null || s.room.memory.closestLink !== s.id)
             );
           }
         }),
-        (s: Structure) => {
+        (s: StructureLink) => {
           return -1 * s.store.energy;
         }
       );
@@ -122,7 +118,7 @@ const goGetEnergy = function (
     }
   } else {
     closestContainer = this.pos.findClosestByRange(FIND_STRUCTURES, {
-      filter: (s: Structure) => {
+      filter: (s: StructureContainer) => {
         return (
           (s.structureType === STRUCTURE_CONTAINER ||
             s.structureType === STRUCTURE_STORAGE ||
@@ -139,7 +135,7 @@ const goGetEnergy = function (
       MineEnergyAction.setAction(this);
     } else {
       const closestDroppedEnergy: Resource[] = this.room.find(FIND_DROPPED_RESOURCES);
-      if (closestDroppedEnergy.length > 0 && closestDroppedEnergy[0].resourceType == RESOURCE_ENERGY) {
+      if (closestDroppedEnergy.length > 0 && closestDroppedEnergy[0].resourceType === RESOURCE_ENERGY) {
         PickupAction.setAction(this, closestDroppedEnergy[0]);
       } else {
         const closestTombstone: Tombstone[] = this.room.find(FIND_TOMBSTONES);
@@ -155,7 +151,7 @@ const goGetEnergy = function (
 
 const deliverEnergyToSpawner = function (this: Creep) {
   const towerContainer = this.pos.findClosestByRange(FIND_STRUCTURES, {
-    filter: (s: Structure) => {
+    filter: (s: StructureTower) => {
       return s.structureType === STRUCTURE_TOWER && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
     }
   });
@@ -164,7 +160,7 @@ const deliverEnergyToSpawner = function (this: Creep) {
     return;
   }
   const spawnerContainer = this.pos.findClosestByRange(FIND_STRUCTURES, {
-    filter: (s: Structure) => {
+    filter: (s: StructureExtension) => {
       return (
         (s.structureType === STRUCTURE_EXTENSION || s.structureType === STRUCTURE_SPAWN) &&
         s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
@@ -176,15 +172,15 @@ const deliverEnergyToSpawner = function (this: Creep) {
   } else {
     const mostEmptyContainer = _.sortBy(
       this.room.find(FIND_STRUCTURES, {
-        filter: (s: Structure) => {
+        filter: (s: StructureContainer) => {
           return (
             (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
             s.store.getFreeCapacity(RESOURCE_ENERGY) > 0 &&
-            (s.room.memory.closestLink == null || s.room.memory.closestLink != s.id)
+            (s.room.memory.closestLink == null || s.room.memory.closestLink !== s.id)
           );
         }
       }),
-      (s: Structure) => {
+      (s: StructureContainer) => {
         return s.store.energy;
       }
     );

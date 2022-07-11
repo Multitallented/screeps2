@@ -2,6 +2,7 @@ import { CreepController } from "./creeps/creep-controller";
 import { ErrorMapper } from "utils/ErrorMapper";
 import { RoomController } from "./room/room-controller";
 import { RoomPrototype } from "./room/room-prototype";
+import { CreepRoleEnum } from "./creeps/roles/creep-role-enum";
 
 declare global {
   /*
@@ -18,10 +19,30 @@ declare global {
     log: any;
   }
 
-  interface CreepMemory {
-    role: string;
+  interface MoveInProgress {
+    dest: RoomPosition;
+    time: number;
+    path: string;
     room: string;
-    working: boolean;
+  }
+
+  interface CreepMemory {
+    action?: string;
+    role?: CreepRoleEnum;
+    homeRoom?: string;
+    destination?: RoomPosition;
+    target?: Id<_HasId>;
+    prevPos?: RoomPosition;
+    _move?: MoveInProgress;
+    actionSwitched?: boolean;
+    fromRoom?: string;
+    originRoom?: string;
+    toRoom?: string;
+  }
+
+  interface RoomMemory {
+    ccontainer?: string;
+    closestLink?: string;
   }
 
   // Syntax for adding proprties to `global` (ex "global.log")
