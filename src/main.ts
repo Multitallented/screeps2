@@ -18,6 +18,7 @@ declare global {
     uuid: number;
     log: any;
     roomData: Map<string, GlobalRoomMemory>;
+    username?: string;
   }
 
   interface GlobalRoomMemory {
@@ -43,6 +44,10 @@ declare global {
     fromRoom?: string;
     originRoom?: string;
     toRoom?: string;
+    endRoom?: string;
+    resourceType?: ResourceConstant;
+    source?: Id<_HasId>;
+    wait?: string;
   }
 
   interface SourceMemory {
@@ -69,9 +74,9 @@ declare global {
     sites?: Map<number, Map<string, StructureConstant>>;
     sites2?: Map<string, StructureConstant>;
     ticksTillNextConstruction?: number;
-    loopCenter: Map<string, boolean>;
-    exits: Map<ExitConstant, boolean>;
-    center: RoomPosition;
+    loopCenter?: Map<string, boolean>;
+    exits?: Map<ExitConstant, boolean>;
+    center?: RoomPosition;
   }
 
   // Syntax for adding proprties to `global` (ex "global.log")

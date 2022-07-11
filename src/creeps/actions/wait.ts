@@ -1,33 +1,36 @@
-
 export class WaitAction {
-    static KEY = 'wait';
-    private static RESERVED = 'reserved';
-    static run(creep:Creep) {
-        if (creep.memory['wait'] === WaitAction.RESERVED && creep.room.controller &&
-                ((creep.room.controller.reservation && creep.room.controller.reservation.username === Memory['username']) ||
-                creep.room.controller.my)) {
-            delete creep.memory['wait'];
-            creep.setNextAction();
-        } else if (creep.memory['wait']) {
-            creep.setNextAction();
-        }
+  static KEY = "wait";
+  private static readonly RESERVED = "reserved";
+  private static readonly WAITING = "waiting";
+  public static run(creep: Creep): void {
+    if (
+      creep.memory.wait === WaitAction.RESERVED &&
+      creep.room.controller &&
+      ((creep.room.controller.reservation && creep.room.controller.reservation.username === Memory.username) ||
+        creep.room.controller.my)
+    ) {
+      delete creep.memory.wait;
+      creep.setNextAction();
+    } else if (creep.memory.wait) {
+      creep.setNextAction();
     }
+  }
 
-    static setActionUntilReserved(creep:Creep) {
-        creep.memory['action'] = 'wait';
-        creep.memory['wait'] = WaitAction.RESERVED;
-        creep.say('🕙 reserved');
-    }
+  public static setActionUntilReserved(creep: Creep): void {
+    creep.memory.action = "wait";
+    creep.memory.wait = WaitAction.RESERVED;
+    creep.say("🕙 reserved");
+  }
 
-    static setActionUntilNextTick(creep: Creep) {
-        creep.memory['action'] = 'wait';
-        creep.memory['wait'] = true;
-        creep.say('🕙 idle');
-    }
+  public static setActionUntilNextTick(creep: Creep): void {
+    creep.memory.action = "wait";
+    creep.memory.wait = WaitAction.WAITING;
+    creep.say("🕙 idle");
+  }
 
-    static setActionPermenantly(creep: Creep) {
-        delete creep.memory['wait'];
-        creep.memory['action'] = 'wait';
-        creep.say('Zz sleep');
-    }
+  public static setActionPermenantly(creep: Creep): void {
+    delete creep.memory.wait;
+    creep.memory.action = "wait";
+    creep.say("Zz sleep");
+  }
 }

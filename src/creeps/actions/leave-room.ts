@@ -1,13 +1,11 @@
-import { GenericCreepMemory } from "../memory/generic-creep-memory";
-
 export class LeaveRoomAction {
   static KEY = "leave-room";
 
-  static getRandomExit(room: Room): ExitConstant {
+  public static getRandomExit(room: Room): ExitConstant | null {
     if (!room.memory.exits) {
       return null;
     }
-    const directions = [];
+    const directions = new Array<ExitConstant>();
     if (room.memory.exits[FIND_EXIT_TOP]) {
       directions.push(FIND_EXIT_TOP);
     }
@@ -50,7 +48,7 @@ export class LeaveRoomAction {
     }
   }
 
-  static run(creep: Creep) {
+  public static run(creep: Creep): void {
     if (!creep.memory.fromRoom) {
       creep.memory.fromRoom = creep.room.name;
     }
@@ -59,30 +57,33 @@ export class LeaveRoomAction {
       delete creep.memory.destination;
       delete creep.memory.toRoom;
       creep.setNextAction();
-      return;
     } else if (creep.memory.fromRoom !== creep.room.name) {
       LeaveRoomAction.moveIntoRoom(creep);
       delete creep.memory.destination;
       creep.memory.fromRoom = creep.room.name;
       creep.memory.endRoom = creep.memory.toRoom;
-      const route = Game.map.findRoute(creep.room, creep.memory.endRoom);
-      if (route && route.length) {
+      const route: Array<{ exit: ExitConstant; room: string }> | ERR_NO_PATH = Game.map.findRoute(
+        creep.room,
+        creep.memory.endRoom
+      );
+      if (route && route !== ERR_NO_PATH && route.length) {
         creep.memory.toRoom = route[0].room;
-        creep.memory.destination = creep.pos.findClosestByPath(route[0].exit);
-        creep.moveToTarget();
+        const destination = creep.pos.findClosestByPath(route[0].exit);
+        if (destination !== null) {
+          creep.memory.destination = destination;
+          creep.moveToTarget();
+        }
       }
       creep.memory.action = "traveling";
       creep.say("✈ traveling");
       creep.runAction();
-      return;
     } else {
       LeaveRoomAction.moveOutOfRoom(creep);
       creep.moveToTarget();
-      return;
     }
   }
 
-  static setAction(creep: Creep, direction: ExitConstant) {
+  public static setAction(creep: Creep, direction: ExitConstant | null): void {
     creep.memory.fromRoom = creep.room.name;
     if (!direction) {
       direction = LeaveRoomAction.getRandomExit(creep.room);
@@ -93,30 +94,32 @@ export class LeaveRoomAction {
     let exitPoint = creep.pos.findClosestByPath(direction);
     if (!exitPoint || !creep.room.memory.exits[direction]) {
       direction = LeaveRoomAction.getRandomExit(creep.room);
-      if (!direction || !creep.room.memory.exits[direction]) {
+      if (direction && creep.room.memory.exits[direction]) {
         exitPoint = creep.pos.findClosestByPath(direction);
       }
     }
 
-    creep.memory.destination = exitPoint;
-    creep.memory.toRoom = creep.room.getAdjacentRoomName(direction);
-    creep.memory.endRoom = creep.memory.toRoom;
-    creep.memory.originRoom = creep.room.name;
-    creep.memory.action = this.KEY;
-    switch (direction) {
-      case FIND_EXIT_BOTTOM:
-        creep.say("☟ bye");
-        break;
-      case FIND_EXIT_TOP:
-        creep.say("☝ bye");
-        break;
-      case FIND_EXIT_LEFT:
-        creep.say("☜ bye");
-        break;
-      case FIND_EXIT_RIGHT:
-      default:
-        creep.say("☞ bye");
-        break;
+    if (exitPoint !== null && direction !== null) {
+      creep.memory.destination = exitPoint;
+      creep.memory.toRoom = creep.room.getAdjacentRoomName(direction);
+      creep.memory.endRoom = creep.memory.toRoom;
+      creep.memory.originRoom = creep.room.name;
+      creep.memory.action = this.KEY;
+      switch (direction) {
+        case FIND_EXIT_BOTTOM:
+          creep.say("☟ bye");
+          break;
+        case FIND_EXIT_TOP:
+          creep.say("☝ bye");
+          break;
+        case FIND_EXIT_LEFT:
+          creep.say("☜ bye");
+          break;
+        case FIND_EXIT_RIGHT:
+        default:
+          creep.say("☞ bye");
+          break;
+      }
     }
   }
 }
