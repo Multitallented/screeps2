@@ -28,7 +28,7 @@ export class Planner {
         }
         room.memory.sources.sources[source.id] = currentNumberOfSpots;
       });
-      if (Memory.roomData.get(room.name)?.sources) {
+      if ((Memory.roomData[room.name] as GlobalRoomMemory).sources) {
         (Memory.roomData[room.name] as GlobalRoomMemory).sources.spots = totalSourceSpots;
       }
       return true;
@@ -39,8 +39,11 @@ export class Planner {
       _.forEach(sources, (source: Source) => {
         const currentNumberOfSpots = room.getNumberOfMiningSpacesAtSource(source.id);
         totalSourceSpots += currentNumberOfSpots;
-        if (!room.memory.sources?.sources) {
+        if (!room.memory.sources) {
           room.memory.sources = {} as SourceMemory;
+        }
+        if (!room.memory.sources.sources) {
+          room.memory.sources.sources = new Map<string, number>();
         }
         room.memory.sources.sources[source.id] = currentNumberOfSpots;
       });
@@ -69,11 +72,10 @@ export class Planner {
       }
 
       const minerals: Array<Mineral> = room.find(FIND_MINERALS);
-      if (minerals.length && room.memory.sites !== undefined && room.memory.sites.get(6) !== undefined) {
-        (room.memory.sites.get(6) as Map<string, StructureConstant>).set(
-          <string>(<unknown>minerals[0].pos.x) + ":" + <string>(<unknown>minerals[0].pos.y),
-          STRUCTURE_EXTRACTOR
-        );
+      if (minerals.length && room.memory.sites !== undefined && room.memory.sites[6] !== undefined) {
+        (room.memory.sites[6] as Map<string, StructureConstant>)[
+          Util.getRoomPositionKey(minerals[0].pos.x, minerals[0].pos.y)
+        ] = STRUCTURE_EXTRACTOR;
       }
       room.memory.containerStructure = true;
       return true;
@@ -116,9 +118,9 @@ export class Planner {
         delete positionMap[Util.getRoomPositionKey(s.x, s.y)];
       }
     });
-    if (containerPos !== null && containerPos instanceof RoomPosition) {
+    if (containerPos !== null) {
       (room.memory.sites[0] as Map<string, StructureConstant>)[
-        Util.getRoomPositionKey(containerPos.x, containerPos.y)
+        Util.getRoomPositionKey((containerPos as RoomPosition).x, (containerPos as RoomPosition).y)
       ] = STRUCTURE_CONTAINER;
     }
     if (linkPos) {

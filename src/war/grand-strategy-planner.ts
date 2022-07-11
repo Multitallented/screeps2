@@ -21,7 +21,7 @@ export class GrandStrategyPlanner {
       }
       let numberOfSources = 0;
       let numberOfSpots = 0;
-      const rData: GlobalRoomMemory | undefined = Memory.roomData.get(key);
+      const rData: GlobalRoomMemory | undefined = Memory.roomData[key] as GlobalRoomMemory;
       if (rData !== undefined && rData.sources) {
         numberOfSources = rData.sources.qty ? rData.sources.qty : 0;
         numberOfSpots = rData.sources.spots ? rData.sources.spots : 0;

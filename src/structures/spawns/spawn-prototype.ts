@@ -15,11 +15,11 @@ const spawnNextCreep = function (this: StructureSpawn) {
     nextCreepToSpawn.options.memory.role
   ) {
     const creepEnum: CreepRoleEnum = CreepRoleEnum[nextCreepToSpawn.options.memory.role] as CreepRoleEnum;
-    const creepCount = this.room.creepCountArray.get(creepEnum);
+    const creepCount = this.room.creepCountArray[creepEnum] as number;
     if (creepCount) {
-      this.room.creepCountArray.set(creepEnum, creepCount + 1);
+      this.room.creepCountArray[creepEnum] = creepCount + 1;
     } else {
-      this.room.creepCountArray.set(creepEnum, 1);
+      this.room.creepCountArray[creepEnum] = 1;
     }
     nextCreepToSpawn.options.memory.homeRoom = this.room.name;
     this.room.visual.text(nextCreepToSpawn.options.memory.role, this.pos.x + 1, this.pos.y, { align: "left" });

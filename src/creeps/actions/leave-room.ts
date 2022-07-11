@@ -92,9 +92,9 @@ export class LeaveRoomAction {
       return;
     }
     let exitPoint = creep.pos.findClosestByPath(direction);
-    if (!exitPoint || !creep.room.memory.exits[direction]) {
+    if (!exitPoint || creep.room.memory.exits === undefined || !creep.room.memory.exits[direction]) {
       direction = LeaveRoomAction.getRandomExit(creep.room);
-      if (direction && creep.room.memory.exits[direction]) {
+      if (direction && creep.room.memory.exits !== undefined && creep.room.memory.exits[direction]) {
         exitPoint = creep.pos.findClosestByPath(direction);
       }
     }

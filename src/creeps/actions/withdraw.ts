@@ -6,7 +6,7 @@ export class WithdrawAction {
     if (creep.memory.resourceType) {
       resourceType = creep.memory.resourceType;
     }
-    if (!creep.memory.target || creep.store.getFreeCapacity(resourceType) === 0) {
+    if (!creep.memory.target || creep.store.getFreeCapacity(resourceType) < 1) {
       delete creep.memory.target;
       delete creep.memory.resourceType;
       creep.setNextAction();
@@ -15,9 +15,8 @@ export class WithdrawAction {
     const container = Game.getObjectById(creep.memory.target);
     if (
       !container ||
-      !(container instanceof StructureContainer) ||
-      !container.store ||
-      container.store.getUsedCapacity(resourceType) === 0
+      !(container as StructureContainer).store ||
+      (container as StructureContainer).store.getUsedCapacity(resourceType) === 0
     ) {
       delete creep.memory.target;
       delete creep.memory.resourceType;
@@ -31,7 +30,10 @@ export class WithdrawAction {
     creep.withdraw(
       <Structure | Tombstone>container,
       resourceType,
-      Math.min(creep.store.getFreeCapacity(resourceType), container.store.getUsedCapacity(resourceType))
+      Math.min(
+        creep.store.getFreeCapacity(resourceType),
+        (container as StructureContainer).store.getUsedCapacity(resourceType)
+      )
     );
     delete creep.memory.target;
     delete creep.memory.resourceType;

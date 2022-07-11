@@ -30,7 +30,7 @@ export class TowerController {
         }
         let sources = 0;
         if (tower.room.memory.sources && tower.room.memory.sources.sources) {
-          sources = tower.room.memory.sources.sources.size;
+          sources = Object.keys(tower.room.memory.sources.sources).length;
         } else {
           sources = tower.room.find(FIND_SOURCES_ACTIVE).length;
         }

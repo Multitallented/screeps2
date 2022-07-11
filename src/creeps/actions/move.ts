@@ -16,7 +16,11 @@ export class MoveAction {
       return;
     } else if (creep.memory.target) {
       const target = Game.getObjectById(creep.memory.target);
-      if (!target || !(target instanceof RoomObject) || !target.pos || creep.pos.inRangeTo(target.pos, 1)) {
+      if (
+        !target ||
+        !(target as unknown as RoomObject).pos ||
+        creep.pos.inRangeTo((target as unknown as RoomObject).pos, 1)
+      ) {
         MoveAction.setNewAction(creep);
         return;
       }

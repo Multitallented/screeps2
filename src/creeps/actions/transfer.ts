@@ -1,5 +1,5 @@
-import { TravelingAction } from "./traveling";
 import { Traveler } from "../roles/traveler";
+import { TravelingAction } from "./traveling";
 
 export class TransferAction {
   public static KEY = "transfer";
@@ -21,7 +21,7 @@ export class TransferAction {
     if (structure && structure.store) {
       freeCapacity = structure.store.getFreeCapacity(resourceType);
     }
-    if (freeCapacity) {
+    if (freeCapacity === null || freeCapacity < 1) {
       if (
         creep.memory.homeRoom !== undefined &&
         creep.memory.role === "miner" &&
@@ -41,8 +41,8 @@ export class TransferAction {
     let source: _HasId | null = null;
     if (creep.memory.source && creep.memory.role === "miner") {
       source = Game.getObjectById(creep.memory.source);
-      if (source && source instanceof RoomObject && source.pos) {
-        inMinerRangeOfSource = creep.pos.inRangeTo(source, 1);
+      if (source && (source as Source).pos) {
+        inMinerRangeOfSource = creep.pos.inRangeTo(source as Source, 1);
       }
     }
     if (!creep.pos.inRangeTo(structure, 1) || (!inMinerRangeOfSource && structure.structureType !== STRUCTURE_LINK)) {
