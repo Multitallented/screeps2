@@ -17,6 +17,11 @@ declare global {
   interface Memory {
     uuid: number;
     log: any;
+    roomData: Map<string, GlobalRoomMemory>;
+  }
+
+  interface GlobalRoomMemory {
+    sources: SourceMemory;
   }
 
   interface MoveInProgress {
@@ -40,9 +45,33 @@ declare global {
     toRoom?: string;
   }
 
+  interface SourceMemory {
+    sources: Map<string, number>;
+    qty?: number;
+    spots?: number;
+  }
+
   interface RoomMemory {
     ccontainer?: string;
     closestLink?: string;
+    sources?: SourceMemory;
+    complete?: boolean;
+    containerStructure?: boolean;
+    sendBuilders?: boolean;
+    towerStructure?: boolean;
+    spawnStructure?: boolean;
+    storageStructure?: boolean;
+    powerSpawnStructure?: boolean;
+    terminalStructure?: boolean;
+    sourceRoads?: boolean;
+    exitRoads?: boolean;
+    extensionStructure?: boolean;
+    sites?: Map<number, Map<string, StructureConstant>>;
+    sites2?: Map<string, StructureConstant>;
+    ticksTillNextConstruction?: number;
+    loopCenter: Map<string, boolean>;
+    exits: Map<ExitConstant, boolean>;
+    center: RoomPosition;
   }
 
   // Syntax for adding proprties to `global` (ex "global.log")

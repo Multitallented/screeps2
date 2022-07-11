@@ -197,10 +197,19 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     }
     if (!this.room.memory.sites) {
       if (!this.room.memory.sites) {
-        this.room.memory.sites = { 0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {} };
+        this.room.memory.sites = new Map<number, Map<string, StructureConstant>>();
+        this.room.memory.sites.set(0, new Map<string, StructureConstant>());
+        this.room.memory.sites.set(1, new Map<string, StructureConstant>());
+        this.room.memory.sites.set(2, new Map<string, StructureConstant>());
+        this.room.memory.sites.set(3, new Map<string, StructureConstant>());
+        this.room.memory.sites.set(4, new Map<string, StructureConstant>());
+        this.room.memory.sites.set(5, new Map<string, StructureConstant>());
+        this.room.memory.sites.set(6, new Map<string, StructureConstant>());
+        this.room.memory.sites.set(7, new Map<string, StructureConstant>());
+        this.room.memory.sites.set(8, new Map<string, StructureConstant>());
       }
       if (!this.room.memory.sites2) {
-        this.room.memory.sites2 = {};
+        this.room.memory.sites2 = new Map<string, StructureConstant>();
       }
       return;
     }
@@ -209,27 +218,33 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     }
 
     if (!this.room.memory.sources || !Memory.roomData || !Memory.roomData[this.room.name]) {
-      this.room.memory.sources = {};
+      this.room.memory.sources = { sources: new Map<string, number>() } as SourceMemory;
       const sources = this.room.find(FIND_SOURCES);
       if (!Memory.roomData) {
-        Memory.roomData = {};
+        Memory.roomData = new Map<string, GlobalRoomMemory>();
       }
       if (!Memory.roomData[this.room.name]) {
         Memory.roomData[this.room.name] = {};
       }
-      Memory.roomData[this.room.name].sources = {
+      (Memory.roomData[this.room.name] as GlobalRoomMemory).sources = {
+        sources: new Map<string, number>(),
         qty: sources.length
       };
       let totalSourceSpots = 0;
       _.forEach(sources, (source: Source) => {
         const currentNumberOfSpots = this.room.getNumberOfMiningSpacesAtSource(source.id);
         totalSourceSpots += currentNumberOfSpots;
+        if (!this.room.memory.sources) {
+          this.room.memory.sources = {} as SourceMemory;
+        }
         if (!this.room.memory.sources.sources) {
-          this.room.memory.sources.sources = {};
+          this.room.memory.sources.sources = new Map<string, number>();
         }
         this.room.memory.sources.sources[source.id] = currentNumberOfSpots;
       });
-      Memory.roomData[this.room.name].sources.spots = totalSourceSpots;
+      if (Memory.roomData.get(this.room.name)?.sources) {
+        (Memory.roomData[this.room.name] as GlobalRoomMemory).sources.spots = totalSourceSpots;
+      }
       return;
     }
     if (!this.room.memory.sources.sources) {
@@ -238,30 +253,33 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       _.forEach(sources, (source: Source) => {
         const currentNumberOfSpots = this.room.getNumberOfMiningSpacesAtSource(source.id);
         totalSourceSpots += currentNumberOfSpots;
-        if (!this.room.memory.sources.sources) {
-          this.room.memory.sources = {};
+        if (!this.room.memory.sources?.sources) {
+          this.room.memory.sources = {} as SourceMemory;
         }
         this.room.memory.sources.sources[source.id] = currentNumberOfSpots;
       });
-      Memory.roomData[this.room.name].sources.spots = totalSourceSpots;
+      (Memory.roomData[this.room.name] as GlobalRoomMemory).sources.spots = totalSourceSpots;
     }
 
-    if (!this.room.memory.exits || Object.keys(this.room.memory.exits).indexOf("" + FIND_EXIT_TOP) === -1) {
+    if (
+      !this.room.memory.exits ||
+      Object.keys(this.room.memory.exits).indexOf(FIND_EXIT_TOP as unknown as string) === -1
+    ) {
       if (!this.room.memory.exits) {
-        this.room.memory.exits = {};
+        this.room.memory.exits = new Map<ExitConstant, boolean>();
       }
       this.room.memory.exits[FIND_EXIT_TOP] = findExitAndPlanWalls(FIND_EXIT_TOP, this.room);
       return;
     }
-    if (Object.keys(this.room.memory.exits).indexOf("" + FIND_EXIT_BOTTOM) === -1) {
+    if (Object.keys(this.room.memory.exits).indexOf(FIND_EXIT_BOTTOM as unknown as string) === -1) {
       this.room.memory.exits[FIND_EXIT_BOTTOM] = findExitAndPlanWalls(FIND_EXIT_BOTTOM, this.room);
       return;
     }
-    if (Object.keys(this.room.memory.exits).indexOf("" + FIND_EXIT_LEFT) === -1) {
+    if (Object.keys(this.room.memory.exits).indexOf(FIND_EXIT_LEFT as unknown as string) === -1) {
       this.room.memory.exits[FIND_EXIT_LEFT] = findExitAndPlanWalls(FIND_EXIT_LEFT, this.room);
       return;
     }
-    if (Object.keys(this.room.memory.exits).indexOf("" + FIND_EXIT_RIGHT) === -1) {
+    if (Object.keys(this.room.memory.exits).indexOf(FIND_EXIT_RIGHT as unknown as string) === -1) {
       this.room.memory.exits[FIND_EXIT_RIGHT] = findExitAndPlanWalls(FIND_EXIT_RIGHT, this.room);
       return;
     }
@@ -283,14 +301,17 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
         containerLocationsNeeded.push(this.room.controller);
         this.placeContainerAndLink(this.room.controller.pos, 5);
       }
-      this.room.memory.center = this.room.getPositionAt(25, 25);
+      this.room.memory.center = <RoomPosition>this.room.getPositionAt(25, 25);
       if (containerLocationsNeeded.length) {
         this.room.memory.center = this.getCenterOfArray(containerLocationsNeeded, this.room);
       }
 
-      const minerals = this.room.find(FIND_MINERALS);
-      if (minerals.length) {
-        this.room.memory.sites[6][minerals[0].pos.x + ":" + minerals[0].pos.y] = STRUCTURE_EXTRACTOR;
+      const minerals: Array<Mineral> = this.room.find(FIND_MINERALS);
+      if (minerals.length && this.room.memory.sites.get(6) !== undefined) {
+        (this.room.memory.sites.get(6) as Map<string, StructureConstant>).set(
+          <string>(<unknown>minerals[0].pos.x) + ":" + <string>(<unknown>minerals[0].pos.y),
+          STRUCTURE_EXTRACTOR
+        );
       }
       this.room.memory.containerStructure = true;
       return;
@@ -400,13 +421,13 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
 
 function findExitAndPlanWalls(exit: ExitConstant, room: Room): boolean {
   if (!room.memory.sites2) {
-    room.memory.sites2 = {};
+    room.memory.sites2 = new Map<string, StructureConstant>();
   }
   if (!room.memory.sites) {
-    room.memory.sites = { 0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {} };
+    room.memory.sites = new Map<number, Map<string, StructureConstant>>();
   }
   if (!room.memory.sites[2]) {
-    room.memory.sites[2] = {};
+    room.memory.sites[2] = new Map<string, StructureConstant>();
   }
   let exitExists = false;
   let x = -1;
