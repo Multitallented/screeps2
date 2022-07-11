@@ -10,7 +10,7 @@ export class Traveler {
   static KEY: CreepRoleEnum = CreepRoleEnum.TRAVELER;
 
   public static setAction(creep: Creep): void {
-    let destinationRoomName: string;
+    let destinationRoomName: string | null;
     switch (creep.memory.action) {
       case TravelingAction.KEY:
       case LeaveRoomAction.KEY:
@@ -59,7 +59,8 @@ export class Traveler {
           } else if (creep.memory.homeRoom) {
             TravelingAction.setAction(creep, new RoomPosition(25, 25, creep.memory.homeRoom));
           } else {
-            creep.memory.homeRoom = creep.room.name;
+            const newHomeRoom = GrandStrategyPlanner.findNewTravelerHomeRoom(creep);
+            creep.memory.homeRoom = newHomeRoom ? newHomeRoom : creep.room.name;
             creep.setNextAction();
           }
         } else {
@@ -71,11 +72,12 @@ export class Traveler {
   }
 
   public static getNextRoom(creep: Creep): void {
-    creep.memory.endRoom = GrandStrategyPlanner.findTravelerDestinationRoom(creep);
-    if (!creep.memory.endRoom) {
+    const helpRoom = GrandStrategyPlanner.findTravelerDestinationRoom(creep);
+    if (!helpRoom) {
       LeaveRoomAction.setAction(creep, null);
     } else {
-      TravelingAction.setAction(creep, new RoomPosition(25, 25, creep.memory.endRoom));
+      creep.memory.endRoom = helpRoom;
+      TravelingAction.setAction(creep, new RoomPosition(25, 25, helpRoom));
     }
   }
 }
