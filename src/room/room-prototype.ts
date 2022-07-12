@@ -8,8 +8,8 @@ import { Transport } from "../creeps/roles/transport";
 import { Miner } from "../creeps/roles/miner";
 import { MinePlanner } from "./planners/mine-planner";
 import { VoidPlanner } from "./planners/void-planner";
-import { Traveler } from "../creeps/roles/traveler";
 import { ObjectIterator } from "lodash";
+import { Traveler } from "../creeps/roles/traveler";
 import { Util } from "../utils/util";
 
 const getPlanner = function (room: Room): RoomPlannerInterface {
@@ -70,6 +70,9 @@ const getAdjacentRoomName = function (this: Room, direction: ExitConstant): stri
 };
 
 const getNumberOfMiningSpacesAtSource = function (this: Room, sourceId: Id<Source>): number {
+  if (this.memory.sources && this.memory.sources.qty && this.memory.sources.sources) {
+    return this.memory.sources.sources[sourceId] as number;
+  }
   const sourceMap = this.findNumberOfSourcesAndSpaces();
   if (sourceMap && sourceMap.sources) {
     const spots = sourceMap.sources[sourceId] as number;
@@ -90,25 +93,13 @@ const getTotalNumberOfMiningSpaces = function (this: Room): number {
   return 0;
 };
 
-const getNumberOfSources = function (this: Room): number {
-  const sourceMap = this.findNumberOfSourcesAndSpaces();
-  if (sourceMap && sourceMap.qty) {
-    return sourceMap.qty;
-  }
-  return 0;
-};
-
 const findNumberOfSourcesAndSpaces = function (this: Room): SourceMemory {
-  if (this.memory.sources) {
-    return this.memory.sources;
-  }
   let numberSources = 0;
   let numberSpaces = 0;
-  const sourceSpacesMap = new Map<string, number>();
+  const sourceSpacesMap = {} as Map<string, number>;
   _.forEach(this.find(FIND_SOURCES), (source: Source) => {
-    let spacesAtThisSource = 0;
     numberSources++;
-    const availablePositions = new Map<string, boolean>();
+    const availablePositions = {} as Map<string, boolean>;
     for (let x = source.pos.x - 1; x < source.pos.x + 2; x++) {
       for (let y = source.pos.y - 1; y < source.pos.y + 2; y++) {
         if (!(x < 0 || x > 49 || y < 0 || x > 49)) {
@@ -131,16 +122,15 @@ const findNumberOfSourcesAndSpaces = function (this: Room): SourceMemory {
         }
       }
     );
-    spacesAtThisSource += Object.keys(availablePositions).length;
-    numberSpaces += Object.keys(availablePositions).length;
+    const spacesAtThisSource = Object.keys(availablePositions).length;
+    numberSpaces += spacesAtThisSource;
     sourceSpacesMap[source.id] = spacesAtThisSource;
   });
-  this.memory.sources = {
+  return {
     qty: numberSources,
     spots: numberSpaces,
     sources: sourceSpacesMap
   };
-  return this.memory.sources;
 };
 
 const getNumberOfCreepsByRole = function (this: Room, role: CreepRoleEnum): number {
@@ -385,7 +375,6 @@ declare global {
     findNextEnergySource(creep: Creep): Source | null;
     getNumberOfMiningSpacesAtSource(sourceId: Id<Source>): number;
     getTotalNumberOfMiningSpaces(): number;
-    getNumberOfSources(): number;
     findNumberOfSourcesAndSpaces(): SourceMemory;
     makeConstructionSites();
     isSpotOpen(pos: RoomPosition): boolean;
@@ -405,7 +394,6 @@ export class RoomPrototype {
     Room.prototype.findNextEnergySource = findNextEnergySource;
     Room.prototype.getNumberOfMiningSpacesAtSource = getNumberOfMiningSpacesAtSource;
     Room.prototype.getTotalNumberOfMiningSpaces = getTotalNumberOfMiningSpaces;
-    Room.prototype.getNumberOfSources = getNumberOfSources;
     Room.prototype.getPlanner = getPlanner;
     Room.prototype.findNumberOfSourcesAndSpaces = findNumberOfSourcesAndSpaces;
     Room.prototype.makeConstructionSites = makeConstructionSites;

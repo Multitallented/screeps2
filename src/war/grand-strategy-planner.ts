@@ -75,19 +75,29 @@ export class GrandStrategyPlanner {
 
   public static findTravelerDestinationRoom(creep: Creep): string | null {
     let helpRoom: string | null = null;
-    _.forEach(Game.rooms, (room: Room) => {
-      if (room.name === creep.memory.endRoom) {
+    _.forEach(Memory.roomData, (roomData: GlobalRoomMemory, key) => {
+      if (!key) {
+        return;
+      }
+      const room: Room = Game.rooms[key];
+      if (key === creep.memory.endRoom) {
         return;
       }
       let numberOfSpots = 0;
-      const numberOfCreeps = room.find(FIND_MY_CREEPS).length;
-      if (room.memory.sources && room.memory.sources.sources) {
-        _.forEach(room.memory.sources.sources, sourceNumber => {
-          numberOfSpots += sourceNumber;
-        });
+      let numberOfCreeps = 0;
+      if (!room && roomData.sources.spots) {
+        numberOfSpots = roomData.sources.spots;
+      } else if (room) {
+        numberOfCreeps = room.find(FIND_MY_CREEPS).length;
+        if (room.memory.sources && room.memory.sources.sources) {
+          _.forEach(room.memory.sources.sources, sourceNumber => {
+            numberOfSpots += sourceNumber;
+          });
+        }
       }
-      const roomDistance = GrandStrategyPlanner.getDistanceBetweenTwoRooms(room.name, creep.room.name);
+      const roomDistance = GrandStrategyPlanner.getDistanceBetweenTwoRooms(key, creep.room.name);
       if (
+        room &&
         roomDistance < 8 &&
         numberOfCreeps - 4 < Math.max(2, numberOfSpots) &&
         room.controller &&
@@ -97,23 +107,28 @@ export class GrandStrategyPlanner {
         return;
       }
       if (
-        (room.controller && room.controller.reservation && room.controller.reservation.username === Memory.username) ||
-        room.memory.sendBuilders ||
+        (room &&
+          room.controller &&
+          room.controller.reservation &&
+          room.controller.reservation.username === Memory.username) ||
+        (room && room.memory.sendBuilders) ||
         roomDistance < 2
       ) {
         let energyInContainers = 0;
-        _.forEach(
-          room.find(FIND_STRUCTURES, {
-            filter: (s: Structure) => {
-              return s.structureType === STRUCTURE_CONTAINER;
+        if (room) {
+          _.forEach(
+            room.find(FIND_STRUCTURES, {
+              filter: (s: Structure) => {
+                return s.structureType === STRUCTURE_CONTAINER;
+              }
+            }),
+            (s: StructureContainer) => {
+              energyInContainers += s.store.getUsedCapacity(RESOURCE_ENERGY);
             }
-          }),
-          (s: StructureContainer) => {
-            energyInContainers += s.store.getUsedCapacity(RESOURCE_ENERGY);
-          }
-        );
+          );
+        }
         if (helpRoom === null || numberOfCreeps - 4 < Math.max(2, numberOfSpots) || energyInContainers > 500) {
-          helpRoom = room.name;
+          helpRoom = key;
         }
       }
     });

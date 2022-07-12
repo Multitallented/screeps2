@@ -7,7 +7,6 @@ import { CreepRoleEnum } from "../../creeps/roles/creep-role-enum";
 import { CreepSpawnData } from "../../creeps/creep-spawn-data";
 import { GrandStrategyPlanner } from "../../war/grand-strategy-planner";
 import { Miner } from "../../creeps/roles/miner";
-import { ObjectIterator } from "lodash";
 import { Planner } from "./planner";
 import { RoomPlannerInterface } from "./room-planner-interface";
 import { Transport } from "../../creeps/roles/transport";
@@ -203,21 +202,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       return;
     }
     if (!this.room.memory.sites) {
-      if (!this.room.memory.sites) {
-        this.room.memory.sites = new Map<number, Map<string, StructureConstant>>();
-        this.room.memory.sites.set(0, new Map<string, StructureConstant>());
-        this.room.memory.sites.set(1, new Map<string, StructureConstant>());
-        this.room.memory.sites.set(2, new Map<string, StructureConstant>());
-        this.room.memory.sites.set(3, new Map<string, StructureConstant>());
-        this.room.memory.sites.set(4, new Map<string, StructureConstant>());
-        this.room.memory.sites.set(5, new Map<string, StructureConstant>());
-        this.room.memory.sites.set(6, new Map<string, StructureConstant>());
-        this.room.memory.sites.set(7, new Map<string, StructureConstant>());
-        this.room.memory.sites.set(8, new Map<string, StructureConstant>());
-      }
-      if (!this.room.memory.sites2) {
-        this.room.memory.sites2 = new Map<string, StructureConstant>();
-      }
+      this.initSitesArrays(this.room);
       return;
     }
     if (this.room.find(FIND_MY_CREEPS).length < 1) {
