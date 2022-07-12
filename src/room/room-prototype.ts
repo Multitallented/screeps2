@@ -144,46 +144,52 @@ const findNumberOfSourcesAndSpaces = function (this: Room): SourceMemory {
 };
 
 const getNumberOfCreepsByRole = function (this: Room, role: CreepRoleEnum): number {
-  this.creepCountArray = initCreepCountArray(this.creepCountArray, this);
-  const count = this.creepCountArray[role] as number;
+  initCreepCountArray(this);
+  if (this.memory.creepCount === undefined) {
+    return 0;
+  }
+  const count = this.memory.creepCount[role] as number;
   return count !== undefined ? count : 0;
 };
 
-function initCreepCountArray(creepCountArray: Map<CreepRoleEnum, number>, room: Room): Map<CreepRoleEnum, number> {
-  if (creepCountArray === null) {
-    creepCountArray = {} as Map<CreepRoleEnum, number>;
+function initCreepCountArray(room: Room): void {
+  if (room.memory.creepCount === undefined) {
+    room.memory.creepCount = {} as Map<CreepRoleEnum, number>;
     _.forEach(room.find(FIND_MY_CREEPS), (creep: Creep) => {
-      if (creep.memory && creep.memory.role) {
+      if (creep.memory && creep.memory.role && room.memory.creepCount !== undefined) {
         const currentRole: CreepRoleEnum = creep.memory.role;
-        const count = creepCountArray[currentRole] as number;
+        const count = room.memory.creepCount[currentRole] as number;
         if (count) {
-          creepCountArray[currentRole] = count + 1;
+          room.memory.creepCount[currentRole] = count + 1;
         } else {
-          creepCountArray[currentRole] = 1;
+          room.memory.creepCount[currentRole] = 1;
         }
       }
     });
     _.forEach(room.find(FIND_MY_SPAWNS), (spawn: StructureSpawn) => {
       if (spawn.spawning) {
         for (const creepName in CreepRoleEnum) {
-          if (isNaN(Number(creepName)) && spawn.spawning.name.indexOf(creepName.toLowerCase()) !== -1) {
+          if (
+            isNaN(Number(creepName)) &&
+            spawn.spawning.name.indexOf(creepName.toLowerCase()) !== -1 &&
+            room.memory.creepCount !== undefined
+          ) {
             const creepEnum: CreepRoleEnum = CreepRoleEnum[creepName] as CreepRoleEnum;
-            const count = creepCountArray[creepEnum] as number;
+            const count = room.memory.creepCount[creepEnum] as number;
             if (count) {
-              creepCountArray[creepEnum] = count + 1;
+              room.memory.creepCount[creepEnum] = count + 1;
             } else {
-              creepCountArray[creepEnum] = 1;
+              room.memory.creepCount[creepEnum] = 1;
             }
           }
         }
       }
     });
   }
-  return creepCountArray;
 }
 
 const reassignAllCreeps = function (this: Room, newRole: CreepRoleEnum, filter: (creep: Creep) => boolean) {
-  if (this.creepCountArray == null) {
+  if (this.memory.creepCount == null) {
     this.getNumberOfCreepsByRole(newRole);
   }
   let creepReassigned = false;
@@ -201,13 +207,13 @@ const reassignAllCreeps = function (this: Room, newRole: CreepRoleEnum, filter: 
       delete creep.memory.actionSwitched;
       delete creep.memory.destination;
       creepReassigned = true;
-      incrementAndDecrement(this.creepCountArray, newRole, oldRole);
+      incrementAndDecrement(creep.room, newRole, oldRole);
     }
   });
 };
 
 const reassignSingleCreep = function (this: Room, newRole: CreepRoleEnum, filter: (creep: Creep) => boolean) {
-  if (this.creepCountArray == null) {
+  if (this.memory.creepCount == null) {
     this.getNumberOfCreepsByRole(newRole);
   }
   let reassigned = false;
@@ -224,23 +230,29 @@ const reassignSingleCreep = function (this: Room, newRole: CreepRoleEnum, filter
       delete creep.memory.wait;
       delete creep.memory.actionSwitched;
       delete creep.memory.destination;
-      incrementAndDecrement(this.creepCountArray, newRole, oldRole);
+      incrementAndDecrement(creep.room, newRole, oldRole);
       reassigned = true;
     }
   });
 };
 
-function incrementAndDecrement(map: Map<CreepRoleEnum, number>, increment: CreepRoleEnum, decrement: CreepRoleEnum) {
-  let count = map[decrement] as number;
-  count = count ? count : 0;
-  map[decrement] = count - 1;
-  const countInc = map[increment] as number;
-  if (countInc) {
-    map[increment] = countInc + 1;
-  } else {
-    map[increment] = 1;
+const incrementAndDecrement = function (room: Room, increment: CreepRoleEnum, decrement: CreepRoleEnum | null) {
+  if (!room.memory.creepCount) {
+    return;
   }
-}
+  const countInc = room.memory.creepCount[increment] as number;
+  if (countInc) {
+    room.memory.creepCount[increment] = countInc + 1;
+  } else {
+    room.memory.creepCount[increment] = 1;
+  }
+  if (!decrement) {
+    return;
+  }
+  let count = room.memory.creepCount[decrement] as number;
+  count = count ? count : 0;
+  room.memory.creepCount[decrement] = count - 1;
+};
 
 function canPlaceRampart(pos: RoomPosition): boolean {
   let isRampartOpen = true;
@@ -360,7 +372,7 @@ const reassignIdleCreep = function (this: Room, creep: Creep) {
   creep.memory.role = newRole;
   delete creep.memory.action;
   delete creep.memory.target;
-  incrementAndDecrement(this.creepCountArray, newRole, oldRole);
+  incrementAndDecrement(creep.room, newRole, oldRole);
 };
 
 declare global {
@@ -368,7 +380,6 @@ declare global {
     reassignAllCreeps(newRole: CreepRoleEnum, filter: (creep: Creep) => boolean | null);
     reassignSingleCreep(newRole: CreepRoleEnum, filter: (creep: Creep) => boolean | null);
     planner: RoomPlannerInterface | null;
-    creepCountArray: Map<CreepRoleEnum, number>;
     getPlanner(room: Room): RoomPlannerInterface;
     getNumberOfCreepsByRole(role: string): number;
     findNextEnergySource(creep: Creep): Source | null;
@@ -381,6 +392,7 @@ declare global {
     isOpen(s: LookAtResultWithPos): boolean;
     reassignIdleCreep(creep: Creep);
     getAdjacentRoomName(direction: ExitConstant): string;
+    incrementAndDecrement(room: Room, increment: CreepRoleEnum, decrement: CreepRoleEnum | null): void;
   }
 }
 
@@ -389,7 +401,6 @@ export class RoomPrototype {
     Room.prototype.reassignAllCreeps = reassignAllCreeps;
     Room.prototype.reassignSingleCreep = reassignSingleCreep;
     Room.prototype.planner = null;
-    Room.prototype.creepCountArray = new Map<CreepRoleEnum, number>();
     Room.prototype.getNumberOfCreepsByRole = getNumberOfCreepsByRole;
     Room.prototype.findNextEnergySource = findNextEnergySource;
     Room.prototype.getNumberOfMiningSpacesAtSource = getNumberOfMiningSpacesAtSource;
@@ -402,5 +413,6 @@ export class RoomPrototype {
     Room.prototype.isSpotOpen = isSpotOpen;
     Room.prototype.isOpen = isOpen;
     Room.prototype.getAdjacentRoomName = getAdjacentRoomName;
+    Room.prototype.incrementAndDecrement = incrementAndDecrement;
   }
 }

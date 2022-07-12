@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import {CreepRoleEnum} from "./roles/creep-role-enum";
+import { CreepRoleEnum } from "./roles/creep-role-enum";
 
 export class CreepSpawnData {
   public bodyArray: Array<BodyPartConstant>;
@@ -87,7 +87,7 @@ export class CreepSpawnData {
       key + <string>(<unknown>Game.time),
       {
         memory: {
-          role: CreepRoleEnum[key] as CreepRoleEnum
+          role: <CreepRoleEnum>key
         }
       },
       minPercentCapacity

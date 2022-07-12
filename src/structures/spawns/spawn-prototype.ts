@@ -8,20 +8,12 @@ const spawnNextCreep = function (this: StructureSpawn) {
   }
 
   const nextCreepToSpawn: CreepSpawnData | null = this.room.getPlanner(this.room).getNextCreepToSpawn();
-  if (
-    nextCreepToSpawn &&
-    nextCreepToSpawn.options &&
-    nextCreepToSpawn.options.memory &&
-    nextCreepToSpawn.options.memory.role
-  ) {
-    const creepEnum: CreepRoleEnum = CreepRoleEnum[nextCreepToSpawn.options.memory.role] as CreepRoleEnum;
-    const creepCount = this.room.creepCountArray[creepEnum] as number;
-    if (creepCount) {
-      this.room.creepCountArray[creepEnum] = creepCount + 1;
-    } else {
-      this.room.creepCountArray[creepEnum] = 1;
+  if (nextCreepToSpawn && nextCreepToSpawn.options.memory && nextCreepToSpawn.options.memory.role) {
+    const creepEnum: CreepRoleEnum = nextCreepToSpawn.options.memory.role;
+    this.room.incrementAndDecrement(this.room, creepEnum, null);
+    if (nextCreepToSpawn.options.memory) {
+      nextCreepToSpawn.options.memory.homeRoom = this.room.name;
     }
-    nextCreepToSpawn.options.memory.homeRoom = this.room.name;
     this.room.visual.text(nextCreepToSpawn.options.memory.role, this.pos.x + 1, this.pos.y, { align: "left" });
     if (
       nextCreepToSpawn.getEnergyRequired() <= this.room.energyAvailable &&

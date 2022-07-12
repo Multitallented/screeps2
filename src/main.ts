@@ -77,6 +77,7 @@ declare global {
     loopCenter?: Map<string, boolean>;
     exits?: Map<ExitConstant, boolean>;
     center?: RoomPosition;
+    creepCount?: Map<CreepRoleEnum, number>;
   }
 
   // Syntax for adding proprties to `global` (ex "global.log")

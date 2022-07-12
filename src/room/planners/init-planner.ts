@@ -102,7 +102,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     const builders = this.room.getNumberOfCreepsByRole(Builder.KEY);
     const upgraders = this.room.getNumberOfCreepsByRole(Upgrader.KEY);
     const miners = this.room.getNumberOfCreepsByRole(Miner.KEY);
-    const spawns = this.room.find(FIND_MY_SPAWNS).length;
+    // const spawns = this.room.find(FIND_MY_SPAWNS).length;
     const minerNearDeath =
       this.room.find(FIND_MY_CREEPS, {
         filter: (creep: Creep) => {
@@ -122,22 +122,22 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       sources = this.room.find(FIND_SOURCES_ACTIVE).length;
     }
 
-    if (spawns > 1) {
-      console.log(
-        "room: " +
-          this.room.name +
-          " Upgraders: " +
-          <string>(<unknown>this.room.getNumberOfCreepsByRole(CreepRoleEnum.UPGRADER)) +
-          " Transport: " +
-          <string>(<unknown>this.room.getNumberOfCreepsByRole(CreepRoleEnum.TRANSPORT)) +
-          " Miners: " +
-          <string>(<unknown>this.room.getNumberOfCreepsByRole(CreepRoleEnum.MINER)) +
-          " Builders: " +
-          <string>(<unknown>this.room.getNumberOfCreepsByRole(CreepRoleEnum.BUILDER)) +
-          " Sources: " +
-          <string>(<unknown>sources)
-      );
-    }
+    // if (spawns > 1) {
+    //   console.log(
+    //     "room: " +
+    //       this.room.name +
+    //       " Upgraders: " +
+    //       <string>(<unknown>this.room.getNumberOfCreepsByRole(CreepRoleEnum.UPGRADER)) +
+    //       " Transport: " +
+    //       <string>(<unknown>this.room.getNumberOfCreepsByRole(CreepRoleEnum.TRANSPORT)) +
+    //       " Miners: " +
+    //       <string>(<unknown>this.room.getNumberOfCreepsByRole(CreepRoleEnum.MINER)) +
+    //       " Builders: " +
+    //       <string>(<unknown>this.room.getNumberOfCreepsByRole(CreepRoleEnum.BUILDER)) +
+    //       " Sources: " +
+    //       <string>(<unknown>sources)
+    //   );
+    // }
     const constructionSites = this.room.find(FIND_CONSTRUCTION_SITES).length;
 
     if (transports < 1) {

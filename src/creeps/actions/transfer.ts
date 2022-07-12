@@ -1,5 +1,5 @@
-import { Traveler } from "../roles/traveler";
-import { TravelingAction } from "./traveling";
+import {TravelingAction} from "./traveling";
+import {CreepRoleEnum} from "../roles/creep-role-enum";
 
 export class TransferAction {
   public static KEY = "transfer";
@@ -28,7 +28,7 @@ export class TransferAction {
         creep.room.controller &&
         (creep.room.controller.reservation || !creep.room.controller.my)
       ) {
-        creep.memory.role = Traveler.KEY;
+        creep.memory.role = CreepRoleEnum.TRAVELER;
         TravelingAction.setAction(creep, new RoomPosition(25, 25, creep.memory.homeRoom));
       }
 
@@ -39,7 +39,7 @@ export class TransferAction {
     }
     let inMinerRangeOfSource = true;
     let source: _HasId | null = null;
-    if (creep.memory.source && creep.memory.role === "miner") {
+    if (creep.memory.source && creep.memory.role === CreepRoleEnum.MINER) {
       source = Game.getObjectById(creep.memory.source);
       if (source && (source as Source).pos) {
         inMinerRangeOfSource = creep.pos.inRangeTo(source as Source, 1);
