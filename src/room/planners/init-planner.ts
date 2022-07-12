@@ -193,6 +193,16 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 450)),
         1
       );
+    } else if (
+      this.room.energyAvailable > this.room.energyCapacityAvailable * 0.9 &&
+      this.room.energyAvailable > 600 &&
+      travelers < 4
+    ) {
+      return CreepSpawnData.build(
+        Traveler.KEY,
+        CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 600)),
+        1
+      );
     }
     return null;
   }
