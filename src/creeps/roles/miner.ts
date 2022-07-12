@@ -32,12 +32,25 @@ export class Miner {
       default:
         sources = creep.room.find(FIND_SOURCES_ACTIVE);
         for (const source of sources) {
+          const range = creep.pos.getRangeTo(source.pos);
+          const reassignMiners = new Array<Creep>();
           const otherMinersOnSource = creep.room.find(FIND_MY_CREEPS, {
             filter: (c: Creep) => {
-              return c.memory && c.memory.role === Miner.KEY && c.memory.target === source.id;
+              if (c.memory && c.memory.role === Miner.KEY && c.memory.target === source.id) {
+                if (c !== creep && c.pos.getRangeTo(source.pos) > range) {
+                  reassignMiners.push(c);
+                  return false;
+                } else {
+                  return true;
+                }
+              }
+              return false;
             }
           });
           if (otherMinersOnSource.length < 1) {
+            _.forEach(reassignMiners, (c: Creep) => {
+              delete c.memory.target;
+            });
             MineEnergyAction.setActionWithTarget(creep, source);
             creep.runAction();
             return;

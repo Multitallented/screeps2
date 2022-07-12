@@ -25,7 +25,7 @@ export class Melee {
       return;
     }
 
-    const hostileRoom = GrandStrategyPlanner.findHostileRoom(creep);
+    const hostileRoom = GrandStrategyPlanner.findHostileRoom(creep.room.name, creep);
     if (hostileRoom) {
       TravelingAction.setAction(creep, new RoomPosition(25, 25, hostileRoom));
       creep.runAction();

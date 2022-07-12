@@ -12,7 +12,6 @@ import { RoomPlannerInterface } from "./room-planner-interface";
 import { Transport } from "../../creeps/roles/transport";
 import { Traveler } from "../../creeps/roles/traveler";
 import { Upgrader } from "../../creeps/roles/upgrader";
-import {Melee} from "../../creeps/roles/melee";
 
 export class InitPlanner extends Planner implements RoomPlannerInterface {
   private readonly room: Room;
@@ -139,14 +138,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     //   );
     // }
     // TODO make this more efficient
-    const imminentHostiles =
-      _.filter(Game.rooms, (room: Room) => {
-        return (
-          room.find(FIND_HOSTILE_CREEPS).length > 0 ||
-          room.find(FIND_HOSTILE_POWER_CREEPS).length > 0 ||
-          room.find(FIND_HOSTILE_STRUCTURES).length > 0
-        );
-      }).length > 0;
+    const imminentHostiles = GrandStrategyPlanner.findHostileRoom(this.room.name, null) !== null;
     const constructionSites = this.room.find(FIND_CONSTRUCTION_SITES).length;
 
     if (transports < 1) {

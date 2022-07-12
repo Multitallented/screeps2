@@ -89,12 +89,12 @@ export class GrandStrategyPlanner {
     (Memory.roomData[roomName] as GlobalRoomMemory).travelers = (
       Memory.roomData[roomName] as GlobalRoomMemory
     ).travelers.filter((id: Id<_HasId>) => {
-      return Game.creeps[id];
+      return Game.getObjectById(id) !== null;
     });
     (Memory.roomData[roomName] as GlobalRoomMemory).defenders = (
       Memory.roomData[roomName] as GlobalRoomMemory
     ).defenders.filter((id: Id<_HasId>) => {
-      return Game.creeps[id];
+      return Game.getObjectById(id) !== null;
     });
   }
 
@@ -110,7 +110,7 @@ export class GrandStrategyPlanner {
       }
       let numberOfSpots = 0;
       let numberOfCreeps = 0;
-      if (!room && roomData.sources.spots) {
+      if (!room && roomData.sources && roomData.sources.spots) {
         numberOfSpots = roomData.sources.spots;
       } else if (room) {
         numberOfCreeps = room.find(FIND_MY_CREEPS).length;
@@ -138,7 +138,7 @@ export class GrandStrategyPlanner {
           room.controller.reservation &&
           room.controller.reservation.username === Memory.username) ||
         (room && room.memory.sendBuilders) ||
-        roomDistance < 2
+        (roomDistance < 2 && creep.room.findExitTo(key) !== ERR_NO_PATH)
       ) {
         let energyInContainers = 0;
         if (room) {
@@ -157,6 +157,7 @@ export class GrandStrategyPlanner {
         if (
           !hasHostiles &&
           (helpRoom === null ||
+            !room ||
             (Memory.roomData[key] as GlobalRoomMemory).travelers.length - 4 < Math.max(2, numberOfSpots) ||
             energyInContainers > 500)
         ) {
@@ -252,19 +253,19 @@ export class GrandStrategyPlanner {
     });
   }
 
-  public static findHostileRoom(creep: Creep): string | null {
+  public static findHostileRoom(roomName: string, creep: Creep | null): string | null {
     let hostileRoom: string | null = null;
     _.forEach(Memory.roomData, (roomData: GlobalRoomMemory, key) => {
       if (!key || !GrandStrategyPlanner.hasHostilesInRoom(key)) {
         return;
       }
       GrandStrategyPlanner.cleanupTravelerArray(key);
-      if (GrandStrategyPlanner.getDistanceBetweenTwoRooms(key, creep.room.name) > 8) {
+      if (GrandStrategyPlanner.getDistanceBetweenTwoRooms(key, roomName) > 8) {
         return;
       }
       hostileRoom = key;
     });
-    if (hostileRoom !== null) {
+    if (hostileRoom !== null && creep !== null) {
       console.log("sending melee to " + <string>(<unknown>hostileRoom));
       (Memory.roomData[hostileRoom] as GlobalRoomMemory).defenders.push(creep.id);
     }
