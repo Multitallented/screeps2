@@ -187,10 +187,16 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     } else if (GrandStrategyPlanner.canClaimAnyRoom()) {
       // TODO only build 1 for the room
       return CreepSpawnData.build(Claimer.KEY, CreepBodyBuilder.buildClaimer(), 0.5);
-    } else if (this.room.energyAvailable > 600 && travelers < 2) {
+    } else if (this.room.energyAvailable > 600 && travelers < 2 && (upgraders > 2 || travelers < 1)) {
       return CreepSpawnData.build(
         Traveler.KEY,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 450)),
+        1
+      );
+    } else if (this.room.energyAvailable > 600 && upgraders < 4) {
+      return CreepSpawnData.build(
+        Upgrader.KEY,
+        CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 900)),
         1
       );
     } else if (

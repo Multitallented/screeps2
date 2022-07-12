@@ -1,16 +1,16 @@
 import * as _ from "lodash";
-import { InitPlanner } from "./planners/init-planner";
-import { RoomPlannerInterface } from "./planners/room-planner-interface";
-import { CreepRoleEnum } from "../creeps/roles/creep-role-enum";
-import { ConstructionSiteData } from "../structures/construction/construction-site-data";
-import { WaitAction } from "../creeps/actions/wait";
-import { Transport } from "../creeps/roles/transport";
-import { Miner } from "../creeps/roles/miner";
-import { MinePlanner } from "./planners/mine-planner";
-import { VoidPlanner } from "./planners/void-planner";
-import { ObjectIterator } from "lodash";
-import { Traveler } from "../creeps/roles/traveler";
-import { Util } from "../utils/util";
+import {ObjectIterator} from "lodash";
+import {InitPlanner} from "./planners/init-planner";
+import {RoomPlannerInterface} from "./planners/room-planner-interface";
+import {CreepRoleEnum} from "../creeps/roles/creep-role-enum";
+import {ConstructionSiteData} from "../structures/construction/construction-site-data";
+import {WaitAction} from "../creeps/actions/wait";
+import {Transport} from "../creeps/roles/transport";
+import {Miner} from "../creeps/roles/miner";
+import {MinePlanner} from "./planners/mine-planner";
+import {VoidPlanner} from "./planners/void-planner";
+import {Traveler} from "../creeps/roles/traveler";
+import {Util} from "../utils/util";
 
 const getPlanner = function (room: Room): RoomPlannerInterface {
   return getPlannerByName(room, getPlannerType(room));
@@ -349,6 +349,10 @@ const reassignIdleCreep = function (this: Room, creep: Creep) {
   if (newRoleObj == null) {
     if (oldRole === Traveler.KEY) {
       Traveler.getNextRoom(creep);
+    } else if (creep.memory.homeRoom !== this.name && oldRole === CreepRoleEnum.BUILDER) {
+      this.reassignSingleCreep(CreepRoleEnum.TRAVELER, (cCreep: Creep) => {
+        return cCreep.id === creep.id;
+      });
     } else {
       WaitAction.setActionUntilNextTick(creep);
     }
