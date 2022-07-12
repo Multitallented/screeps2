@@ -73,6 +73,31 @@ export class GrandStrategyPlanner {
     return helpRoom;
   }
 
+  public static cleanupTravelerArray(roomName: string): void {
+    if (!Memory.roomData) {
+      Memory.roomData = {} as Map<string, GlobalRoomMemory>;
+    }
+    if (!Memory.roomData[roomName]) {
+      Memory.roomData[roomName] = {} as GlobalRoomMemory;
+    }
+    if (!(Memory.roomData[roomName] as GlobalRoomMemory).travelers) {
+      (Memory.roomData[roomName] as GlobalRoomMemory).travelers = new Array<Id<_HasId>>();
+    }
+    if (!(Memory.roomData[roomName] as GlobalRoomMemory).defenders) {
+      (Memory.roomData[roomName] as GlobalRoomMemory).defenders = new Array<Id<_HasId>>();
+    }
+    (Memory.roomData[roomName] as GlobalRoomMemory).travelers = (
+      Memory.roomData[roomName] as GlobalRoomMemory
+    ).travelers.filter((id: Id<_HasId>) => {
+      return Game.creeps[id];
+    });
+    (Memory.roomData[roomName] as GlobalRoomMemory).defenders = (
+      Memory.roomData[roomName] as GlobalRoomMemory
+    ).defenders.filter((id: Id<_HasId>) => {
+      return Game.creeps[id];
+    });
+  }
+
   public static findTravelerDestinationRoom(creep: Creep): string | null {
     let helpRoom: string | null = null;
     _.forEach(Memory.roomData, (roomData: GlobalRoomMemory, key) => {
@@ -95,6 +120,7 @@ export class GrandStrategyPlanner {
           });
         }
       }
+      GrandStrategyPlanner.cleanupTravelerArray(key);
       const roomDistance = GrandStrategyPlanner.getDistanceBetweenTwoRooms(key, creep.room.name);
       if (
         room &&
@@ -127,16 +153,42 @@ export class GrandStrategyPlanner {
             }
           );
         }
-        if (helpRoom === null || numberOfCreeps - 4 < Math.max(2, numberOfSpots) || energyInContainers > 500) {
+        const hasHostiles = GrandStrategyPlanner.hasHostilesInRoom(key);
+        if (
+          !hasHostiles &&
+          (helpRoom === null ||
+            (Memory.roomData[key] as GlobalRoomMemory).travelers.length - 4 < Math.max(2, numberOfSpots) ||
+            energyInContainers > 500)
+        ) {
           helpRoom = key;
         }
       }
     });
-    console.log("sending traveler to " + <string>(<unknown>helpRoom));
+    if (helpRoom !== null) {
+      console.log("sending traveler to " + <string>(<unknown>helpRoom));
+      (Memory.roomData[helpRoom] as GlobalRoomMemory).travelers.push(creep.id);
+    }
     return helpRoom;
   }
 
+  public static hasHostilesInRoom(roomName: string): boolean {
+    const room = Game.rooms[roomName];
+    return (
+      (room &&
+        (room.find(FIND_HOSTILE_CREEPS).length > 0 ||
+          room.find(FIND_HOSTILE_POWER_CREEPS).length > 0 ||
+          room.find(FIND_HOSTILE_STRUCTURES).length > 0)) ||
+      (!room &&
+        ((Memory.roomData[roomName] as GlobalRoomMemory).hostileMelee > 0 ||
+          (Memory.roomData[roomName] as GlobalRoomMemory).hostileHealer > 0 ||
+          (Memory.roomData[roomName] as GlobalRoomMemory).hostilePowerCreeps > 0 ||
+          (Memory.roomData[roomName] as GlobalRoomMemory).hostileStructures > 0 ||
+          (Memory.roomData[roomName] as GlobalRoomMemory).hostileRanged > 0))
+    );
+  }
+
   public static getDistanceBetweenTwoRooms(room1Name: string, room2Name: string): number {
+    // TODO make this take exits into account?
     const is1West = room1Name.indexOf("W") !== -1;
     const is1North = room1Name.indexOf("N") !== -1;
     const split1Name = room1Name.slice(1).split(is1North ? "N" : "S");
@@ -151,6 +203,71 @@ export class GrandStrategyPlanner {
 
     const verticalDistance = Math.abs(is1West === is2West ? x1 - x2 : x1 + x2);
     const horizontalDistance = Math.abs(is1North === is2North ? y1 - y2 : y1 + y2);
-    return Math.max(verticalDistance, horizontalDistance);
+    return verticalDistance + horizontalDistance;
+  }
+
+  public static scanAllOccupiedRoomsForHostiles(): void {
+    _.forEach(Memory.roomData, (roomData: GlobalRoomMemory, key) => {
+      if (!key) {
+        return;
+      }
+      const room = Game.rooms[key];
+      if (!room) {
+        return;
+      }
+      let ranged = 0;
+      let melee = 0;
+      let heal = 0;
+      let creeps = 0;
+      _.forEach(room.find(FIND_HOSTILE_CREEPS), (creep: Creep) => {
+        if (
+          _.filter(creep.body, (bodyPart: BodyPartDefinition) => {
+            return bodyPart.type === ATTACK;
+          }).length > 0
+        ) {
+          melee++;
+        }
+        if (
+          _.filter(creep.body, (bodyPart: BodyPartDefinition) => {
+            return bodyPart.type === RANGED_ATTACK;
+          }).length > 0
+        ) {
+          ranged++;
+        }
+        if (
+          _.filter(creep.body, (bodyPart: BodyPartDefinition) => {
+            return bodyPart.type === HEAL;
+          }).length > 0
+        ) {
+          heal++;
+        }
+        creeps++;
+      });
+      (Memory.roomData[key] as GlobalRoomMemory).hostileStructures = room.find(FIND_HOSTILE_STRUCTURES).length;
+      (Memory.roomData[key] as GlobalRoomMemory).hostilePowerCreeps = room.find(FIND_HOSTILE_POWER_CREEPS).length;
+      (Memory.roomData[key] as GlobalRoomMemory).hostileRanged = ranged;
+      (Memory.roomData[key] as GlobalRoomMemory).hostileHealer = heal;
+      (Memory.roomData[key] as GlobalRoomMemory).hostileMelee = melee;
+      (Memory.roomData[key] as GlobalRoomMemory).hostileWorkers = Math.max(0, creeps - ranged - heal - melee);
+    });
+  }
+
+  public static findHostileRoom(creep: Creep): string | null {
+    let hostileRoom: string | null = null;
+    _.forEach(Memory.roomData, (roomData: GlobalRoomMemory, key) => {
+      if (!key || !GrandStrategyPlanner.hasHostilesInRoom(key)) {
+        return;
+      }
+      GrandStrategyPlanner.cleanupTravelerArray(key);
+      if (GrandStrategyPlanner.getDistanceBetweenTwoRooms(key, creep.room.name) > 8) {
+        return;
+      }
+      hostileRoom = key;
+    });
+    if (hostileRoom !== null) {
+      console.log("sending melee to " + <string>(<unknown>hostileRoom));
+      (Memory.roomData[hostileRoom] as GlobalRoomMemory).defenders.push(creep.id);
+    }
+    return hostileRoom;
   }
 }

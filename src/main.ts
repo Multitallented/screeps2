@@ -23,6 +23,15 @@ declare global {
 
   interface GlobalRoomMemory {
     sources: SourceMemory;
+    travelers: Array<Id<_HasId>>;
+    hostileMelee: number;
+    hostileHealer: number;
+    hostileRanged: number;
+    hostileBuildings: number;
+    hostileWorkers: number;
+    hostilePowerCreeps: number;
+    hostileStructures: number;
+    defenders: Array<Id<_HasId>>;
   }
 
   interface MoveInProgress {

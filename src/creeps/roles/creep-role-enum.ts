@@ -4,5 +4,6 @@ export enum CreepRoleEnum {
   BUILDER = "builder",
   MINER = "miner",
   TRAVELER = "traveler",
-  CLAIMER = "claimer"
+  CLAIMER = "claimer",
+  MELEE = "melee"
 }

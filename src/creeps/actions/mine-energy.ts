@@ -1,4 +1,5 @@
 import * as _ from "lodash";
+import {CreepRoleEnum} from "../roles/creep-role-enum";
 
 export class MineEnergyAction {
   static KEY = "mine-energy";
@@ -25,7 +26,23 @@ export class MineEnergyAction {
         return;
       }
     }
+    let creepsMining = 0;
+    _.forEach(creep.room.find(FIND_MY_CREEPS), (cCreep: Creep) => {
+      if (cCreep.memory.target === creep.memory.target) {
+        creepsMining++;
+      }
+    });
     const source: Source = Game.getObjectById(creep.memory.target) as Source;
+    if (
+      creep.memory.role !== CreepRoleEnum.MINER &&
+      creep.room.memory.sources &&
+      creep.room.memory.sources.sources &&
+      creep.room.memory.sources.sources[source.id] < creepsMining
+    ) {
+      delete creep.memory.target;
+      creep.goGetEnergy(false, false);
+      return;
+    }
     if (!source || source.energy < 1) {
       delete creep.memory.target;
       creep.setNextAction();

@@ -12,6 +12,7 @@ import { RoomPlannerInterface } from "./room-planner-interface";
 import { Transport } from "../../creeps/roles/transport";
 import { Traveler } from "../../creeps/roles/traveler";
 import { Upgrader } from "../../creeps/roles/upgrader";
+import {Melee} from "../../creeps/roles/melee";
 
 export class InitPlanner extends Planner implements RoomPlannerInterface {
   private readonly room: Room;
@@ -137,6 +138,15 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     //       <string>(<unknown>sources)
     //   );
     // }
+    // TODO make this more efficient
+    const imminentHostiles =
+      _.filter(Game.rooms, (room: Room) => {
+        return (
+          room.find(FIND_HOSTILE_CREEPS).length > 0 ||
+          room.find(FIND_HOSTILE_POWER_CREEPS).length > 0 ||
+          room.find(FIND_HOSTILE_STRUCTURES).length > 0
+        );
+      }).length > 0;
     const constructionSites = this.room.find(FIND_CONSTRUCTION_SITES).length;
 
     if (transports < 1) {
@@ -164,15 +174,24 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     } else if (
       hasContainers &&
       (transports < 3 ||
-        (transports < builders + upgraders / 2 && transports < 4 * sources) ||
-        (constructionSites < 1 && transports < 3 * sources + 1))
+        (transports < builders + upgraders / 2 && transports < 3 * sources) ||
+        (constructionSites < 1 && transports < 2 * sources + 1))
     ) {
       return CreepSpawnData.build(
         Transport.KEY,
         CreepBodyBuilder.buildTransport(Math.min(this.room.energyAvailable, 700)),
         transports > 1 ? 1 : 0.4
       );
-    } else if (upgraders + 1 < Math.max(2, this.room.getTotalNumberOfMiningSpaces()) && upgraders / 2 <= builders) {
+    } else if (imminentHostiles) {
+      return CreepSpawnData.build(
+        CreepRoleEnum.MELEE,
+        CreepBodyBuilder.buildMelee(Math.min(this.room.energyAvailable, 500)),
+        0.4
+      );
+    } else if (
+      (upgraders + 1 < Math.max(2, this.room.getTotalNumberOfMiningSpaces()) && upgraders / 2 <= builders) ||
+      (this.room.energyAvailable > 600 && upgraders < 4)
+    ) {
       return CreepSpawnData.build(
         Upgrader.KEY,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 900)),
@@ -187,22 +206,16 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     } else if (GrandStrategyPlanner.canClaimAnyRoom()) {
       // TODO only build 1 for the room
       return CreepSpawnData.build(Claimer.KEY, CreepBodyBuilder.buildClaimer(), 0.5);
-    } else if (this.room.energyAvailable > 600 && travelers < 2 && (upgraders > 2 || travelers < 1)) {
+    } else if (this.room.energyAvailable > 600 && travelers < sources && (upgraders > 2 || travelers < 1)) {
       return CreepSpawnData.build(
         Traveler.KEY,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 450)),
         1
       );
-    } else if (this.room.energyAvailable > 600 && upgraders < 4) {
-      return CreepSpawnData.build(
-        Upgrader.KEY,
-        CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 900)),
-        1
-      );
     } else if (
       this.room.energyAvailable > this.room.energyCapacityAvailable * 0.9 &&
       this.room.energyAvailable > 600 &&
-      travelers < 4
+      travelers < sources * 2
     ) {
       return CreepSpawnData.build(
         Traveler.KEY,

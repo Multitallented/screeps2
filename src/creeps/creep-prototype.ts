@@ -1,24 +1,26 @@
-import { MineEnergyAction } from "./actions/mine-energy";
-import { UpgradeControllerAction } from "./actions/upgrade-controller";
-import { TransferAction } from "./actions/transfer";
-import { Upgrader } from "./roles/upgrader";
-import { BuildAction } from "./actions/build";
-import { WithdrawAction } from "./actions/withdraw";
-import { RepairAction } from "./actions/repair";
-import { PickupAction } from "./actions/pickup";
-import { ReserveControllerAction } from "./actions/reserve-controller";
-import { ClaimControllerAction } from "./actions/claim-controller";
-import { LeaveRoomAction } from "./actions/leave-room";
-import { TravelingAction } from "./actions/traveling";
-import { AttackAction } from "./actions/attack";
-import { WaitAction } from "./actions/wait";
-import { MoveAction } from "./actions/move";
-import { Transport } from "./roles/transport";
-import { Builder } from "./roles/builder";
-import { Miner } from "./roles/miner";
 import * as _ from "lodash";
-import { Traveler } from "./roles/traveler";
+import { AttackAction } from "./actions/attack";
+import { BuildAction } from "./actions/build";
+import { Builder } from "./roles/builder";
+import { ClaimControllerAction } from "./actions/claim-controller";
 import { Claimer } from "./roles/claimer";
+import { CreepRoleEnum } from "./roles/creep-role-enum";
+import { LeaveRoomAction } from "./actions/leave-room";
+import { Melee } from "./roles/melee";
+import { MineEnergyAction } from "./actions/mine-energy";
+import { Miner } from "./roles/miner";
+import { MoveAction } from "./actions/move";
+import { PickupAction } from "./actions/pickup";
+import { RepairAction } from "./actions/repair";
+import { ReserveControllerAction } from "./actions/reserve-controller";
+import { TransferAction } from "./actions/transfer";
+import { Transport } from "./roles/transport";
+import { Traveler } from "./roles/traveler";
+import { TravelingAction } from "./actions/traveling";
+import { UpgradeControllerAction } from "./actions/upgrade-controller";
+import { Upgrader } from "./roles/upgrader";
+import { WaitAction } from "./actions/wait";
+import { WithdrawAction } from "./actions/withdraw";
 
 const moveToTarget = function (this: Creep) {
   LeaveRoomAction.moveIntoRoom(this);
@@ -217,6 +219,9 @@ const setNextAction = function (this: Creep) {
       break;
     case Miner.KEY:
       Miner.setAction(this);
+      break;
+    case CreepRoleEnum.MELEE:
+      Melee.setAction(this);
       break;
     case Upgrader.KEY:
     default:
