@@ -118,9 +118,9 @@ export class Planner {
         delete positionMap[Util.getRoomPositionKey(s.x, s.y)];
       }
     });
-    if (containerPos !== null) {
+    if (containerPos) {
       (room.memory.sites[0] as Map<string, StructureConstant>)[
-        Util.getRoomPositionKey((containerPos as RoomPosition).x, (containerPos as RoomPosition).y)
+        Util.getRoomPositionKey(containerPos.x, containerPos.y)
       ] = STRUCTURE_CONTAINER;
     }
     if (linkPos) {
@@ -132,13 +132,19 @@ export class Planner {
     }
     for (const key in positionMap) {
       if (key && positionMap[key]) {
-        const pos: RoomPosition = <RoomPosition>positionMap[key];
+        const cPos: RoomPosition = <RoomPosition>positionMap[key];
         if (!containerPos) {
-          containerPos = pos;
-          (room.memory.sites[0] as Map<string, StructureConstant>)[key] = STRUCTURE_CONTAINER;
+          const containerSites = room.memory.sites[0] as Map<string, StructureConstant>;
+          if (containerSites) {
+            containerPos = cPos;
+            containerSites[key] = STRUCTURE_CONTAINER;
+          }
         } else if (!linkPos) {
-          linkPos = pos;
-          (room.memory.sites[linkNumber] as Map<string, StructureConstant>)[key] = STRUCTURE_LINK;
+          const linkSites = room.memory.sites[linkNumber] as Map<string, StructureConstant>;
+          if (linkSites) {
+            linkPos = cPos;
+            linkSites[key] = STRUCTURE_LINK;
+          }
         }
       }
     }

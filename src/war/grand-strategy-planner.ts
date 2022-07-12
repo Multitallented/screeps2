@@ -75,8 +75,6 @@ export class GrandStrategyPlanner {
 
   public static findTravelerDestinationRoom(creep: Creep): string | null {
     let helpRoom: string | null = null;
-    let helpReallyNeeded = false;
-    let emergencyHelpNeeded = false;
     _.forEach(Game.rooms, (room: Room) => {
       if (room.name === creep.memory.endRoom) {
         return;
@@ -88,28 +86,38 @@ export class GrandStrategyPlanner {
           numberOfSpots += sourceNumber;
         });
       }
-      if (numberOfCreeps - 4 < Math.max(2, numberOfSpots) && room.controller && room.controller.my) {
-        emergencyHelpNeeded = true;
-        helpRoom = room.name;
-      }
       const roomDistance = GrandStrategyPlanner.getDistanceBetweenTwoRooms(room.name, creep.room.name);
-      if (roomDistance > 1) {
+      if (
+        roomDistance < 8 &&
+        numberOfCreeps - 4 < Math.max(2, numberOfSpots) &&
+        room.controller &&
+        room.controller.my
+      ) {
+        helpRoom = room.name;
         return;
       }
       if (
         (room.controller && room.controller.reservation && room.controller.reservation.username === Memory.username) ||
-        room.memory.sendBuilders
+        room.memory.sendBuilders ||
+        roomDistance < 2
       ) {
-        if (!emergencyHelpNeeded && numberOfCreeps - 1 < Math.max(2, numberOfSpots)) {
-          helpReallyNeeded = true;
-          helpRoom = room.name;
-        } else if (!emergencyHelpNeeded && !helpReallyNeeded && numberOfCreeps - 4 < Math.max(2, numberOfSpots)) {
-          helpRoom = room.name;
-        } else if (!emergencyHelpNeeded && !helpReallyNeeded && (!room.controller || !room.controller.my)) {
+        let energyInContainers = 0;
+        _.forEach(
+          room.find(FIND_STRUCTURES, {
+            filter: (s: Structure) => {
+              return s.structureType === STRUCTURE_CONTAINER;
+            }
+          }),
+          (s: StructureContainer) => {
+            energyInContainers += s.store.getUsedCapacity(RESOURCE_ENERGY);
+          }
+        );
+        if (helpRoom === null || numberOfCreeps - 4 < Math.max(2, numberOfSpots) || energyInContainers > 500) {
           helpRoom = room.name;
         }
       }
     });
+    console.log("sending traveler to " + <string>(<unknown>helpRoom));
     return helpRoom;
   }
 
