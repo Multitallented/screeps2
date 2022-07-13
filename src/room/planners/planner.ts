@@ -20,7 +20,7 @@ export class Planner {
       _.forEach(sources, (source: Source) => {
         const currentNumberOfSpots = room.getNumberOfMiningSpacesAtSource(source.id);
         totalSourceSpots += currentNumberOfSpots;
-        (Memory.roomData[room.name] as GlobalRoomMemory).sources.sources[source.id] = Math.min(1, currentNumberOfSpots);
+        (Memory.roomData[room.name] as GlobalRoomMemory).sources.sources[source.id] = Math.max(1, currentNumberOfSpots);
       });
       if ((Memory.roomData[room.name] as GlobalRoomMemory).sources) {
         (Memory.roomData[room.name] as GlobalRoomMemory).sources.spots = totalSourceSpots;
@@ -42,7 +42,7 @@ export class Planner {
         if (!room.memory.sources.sources) {
           room.memory.sources.sources = new Map<string, number>();
         }
-        room.memory.sources.sources[source.id] = Math.min(1, currentNumberOfSpots);
+        room.memory.sources.sources[source.id] = Math.max(1, currentNumberOfSpots);
       });
       room.memory.sources.qty = sources.length;
       room.memory.sources.spots = totalSourceSpots;
