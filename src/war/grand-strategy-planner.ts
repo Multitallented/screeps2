@@ -178,7 +178,11 @@ export class GrandStrategyPlanner {
       (room &&
         (room.find(FIND_HOSTILE_CREEPS).length > 0 ||
           room.find(FIND_HOSTILE_POWER_CREEPS).length > 0 ||
-          room.find(FIND_HOSTILE_STRUCTURES).length > 0)) ||
+          room.find(FIND_HOSTILE_STRUCTURES, {
+            filter: (s: Structure) => {
+              return s.structureType !== STRUCTURE_POWER_BANK;
+            }
+          }).length > 0)) ||
       (!room &&
         ((Memory.roomData[roomName] as GlobalRoomMemory).hostileMelee > 0 ||
           (Memory.roomData[roomName] as GlobalRoomMemory).hostileHealer > 0 ||
