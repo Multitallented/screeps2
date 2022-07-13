@@ -166,7 +166,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     } else if (
       hasContainers &&
       (transports < 3 ||
-        (transports < builders + upgraders / 2 && transports < 3 * sources) ||
+        (transports < builders + upgraders / 2 && transports < 2 * sources) ||
         (constructionSites < 1 && transports < 2 * sources + 1))
     ) {
       return CreepSpawnData.build(

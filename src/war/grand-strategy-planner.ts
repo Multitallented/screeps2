@@ -248,7 +248,11 @@ export class GrandStrategyPlanner {
         }
         creeps++;
       });
-      (Memory.roomData[key] as GlobalRoomMemory).hostileStructures = room.find(FIND_HOSTILE_STRUCTURES).length;
+      (Memory.roomData[key] as GlobalRoomMemory).hostileStructures = room.find(FIND_HOSTILE_STRUCTURES, {
+        filter: (s: Structure) => {
+          return s.structureType !== STRUCTURE_POWER_BANK;
+        }
+      }).length;
       (Memory.roomData[key] as GlobalRoomMemory).hostilePowerCreeps = room.find(FIND_HOSTILE_POWER_CREEPS).length;
       (Memory.roomData[key] as GlobalRoomMemory).hostileRanged = ranged;
       (Memory.roomData[key] as GlobalRoomMemory).hostileHealer = heal;
