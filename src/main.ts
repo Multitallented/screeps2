@@ -32,6 +32,7 @@ declare global {
     hostilePowerCreeps: number;
     hostileStructures: number;
     defenders: Array<Id<_HasId>>;
+    status?: string;
   }
 
   interface MoveInProgress {

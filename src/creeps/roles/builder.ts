@@ -38,7 +38,7 @@ export class Builder {
         }
       }),
       (s: Structure) => {
-        return -1 * s.hits;
+        return s.hits;
       }
     );
     if (repairThese.length > 0) {

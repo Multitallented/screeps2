@@ -28,6 +28,12 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     const builders = this.room.getNumberOfCreepsByRole(Builder.KEY);
     const upgraders = this.room.getNumberOfCreepsByRole(Upgrader.KEY);
     const miners = this.room.getNumberOfCreepsByRole(Miner.KEY);
+    const hasContainers: boolean =
+      this.room.find(FIND_STRUCTURES, {
+        filter: (s: Structure) => {
+          return s.structureType === STRUCTURE_CONTAINER;
+        }
+      }).length > 0;
     // const spawnersNeedingEnergy = this.room.find(FIND_MY_STRUCTURES, {filter: (s:Structure) => {
     //         return s['store'] && (s.structureType === STRUCTURE_SPAWN ||
     //             s.structureType === STRUCTURE_EXTENSION) && s['store'].getFreeCapacity(RESOURCE_ENERGY) > 0;
@@ -38,7 +44,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       return { newRole: CreepRoleEnum.UPGRADER, oldRole: CreepRoleEnum.TRAVELER, type: "single" };
     } else if (spawns < 1 && upgraders < 1 && builders > 0) {
       return { newRole: CreepRoleEnum.UPGRADER, oldRole: CreepRoleEnum.BUILDER, type: "single" };
-    } else if (spawns < 1 && upgraders < 1 && miners > 0) {
+    } else if (hasContainers && spawns < 1 && upgraders < 1 && miners > 0) {
       return { newRole: CreepRoleEnum.UPGRADER, oldRole: CreepRoleEnum.MINER, type: "single" };
     } else if (spawns < 1 && builders < 3 && travelers > 0) {
       return { newRole: CreepRoleEnum.BUILDER, oldRole: CreepRoleEnum.TRAVELER, type: "single" };
@@ -105,7 +111,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     const minerNearDeath =
       this.room.find(FIND_MY_CREEPS, {
         filter: (creep: Creep) => {
-          return creep.memory && creep.memory.role === Miner.KEY && creep.ticksToLive && creep.ticksToLive < 170;
+          return creep.memory && creep.memory.role === Miner.KEY && creep.ticksToLive && creep.ticksToLive < 120;
         }
       }).length > 0;
     const hasContainers: boolean =
@@ -234,25 +240,22 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       return;
     }
 
-    if (
-      !this.room.memory.exits ||
-      Object.keys(this.room.memory.exits).indexOf(FIND_EXIT_TOP as unknown as string) === -1
-    ) {
+    if (!this.room.memory.exits || this.room.memory.exits[FIND_EXIT_TOP] === undefined) {
       if (!this.room.memory.exits) {
-        this.room.memory.exits = new Map<ExitConstant, boolean>();
+        this.room.memory.exits = {} as Map<ExitConstant, boolean>;
       }
       this.room.memory.exits[FIND_EXIT_TOP] = findExitAndPlanWalls(FIND_EXIT_TOP, this.room);
       return;
     }
-    if (Object.keys(this.room.memory.exits).indexOf(FIND_EXIT_BOTTOM as unknown as string) === -1) {
+    if (this.room.memory.exits[FIND_EXIT_BOTTOM] === undefined) {
       this.room.memory.exits[FIND_EXIT_BOTTOM] = findExitAndPlanWalls(FIND_EXIT_BOTTOM, this.room);
       return;
     }
-    if (Object.keys(this.room.memory.exits).indexOf(FIND_EXIT_LEFT as unknown as string) === -1) {
+    if (this.room.memory.exits[FIND_EXIT_LEFT] === undefined) {
       this.room.memory.exits[FIND_EXIT_LEFT] = findExitAndPlanWalls(FIND_EXIT_LEFT, this.room);
       return;
     }
-    if (Object.keys(this.room.memory.exits).indexOf(FIND_EXIT_RIGHT as unknown as string) === -1) {
+    if (this.room.memory.exits[FIND_EXIT_RIGHT] === undefined) {
       this.room.memory.exits[FIND_EXIT_RIGHT] = findExitAndPlanWalls(FIND_EXIT_RIGHT, this.room);
       return;
     }

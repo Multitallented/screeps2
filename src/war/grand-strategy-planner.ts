@@ -10,7 +10,7 @@ export class GrandStrategyPlanner {
         return;
       }
       const currentRoom: Room = Game.rooms[key];
-      if (!currentRoom || !currentRoom.controller || currentRoom.controller.my) {
+      if (currentRoom && (!currentRoom.controller || currentRoom.controller.my)) {
         return;
       }
       if (currentRoom && reserve && GrandStrategyPlanner.canReserve(Memory.username, currentRoom)) {
