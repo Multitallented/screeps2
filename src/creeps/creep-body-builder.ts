@@ -27,6 +27,7 @@ export class CreepBodyBuilder {
     return bodyArray;
   }
   static buildMiner(energyAvailable: number): Array<BodyPartConstant> {
+    // Designed to sit on an energy source and container mine just enough to deplete the source
     const bodyArray: Array<BodyPartConstant> = [MOVE, CARRY, WORK];
     energyAvailable -= 200;
     const partCount = { WORK: 1, MOVE: 1, CARRY: 1 };
@@ -61,15 +62,12 @@ export class CreepBodyBuilder {
     return bodyArray;
   }
   static buildMelee(energyAvailable: number): Array<BodyPartConstant> {
+    // Build a creep with 75% move and 25% attack parts for chasing
     const bodyArray: Array<BodyPartConstant> = [MOVE, ATTACK];
     energyAvailable -= 130;
     const partCount = { ATTACK: 1, MOVE: 1, TOUGH: 0 };
     while (energyAvailable >= 50 && bodyArray.length < 30) {
-      if (partCount[MOVE] / bodyArray.length < 0.5 && energyAvailable >= CreepSpawnData.getBodyPartCost(MOVE)) {
-        partCount[MOVE] += 1;
-        bodyArray.unshift(MOVE);
-        energyAvailable -= CreepSpawnData.getBodyPartCost(MOVE);
-      } else if (energyAvailable >= CreepSpawnData.getBodyPartCost(ATTACK)) {
+      if (energyAvailable >= CreepSpawnData.getBodyPartCost(ATTACK) && partCount[ATTACK] / bodyArray.length < 0.3) {
         partCount[ATTACK] += 1;
         bodyArray.unshift(ATTACK);
         energyAvailable -= CreepSpawnData.getBodyPartCost(ATTACK);

@@ -122,6 +122,8 @@ export class GrandStrategyPlanner {
       }
       GrandStrategyPlanner.cleanupTravelerArray(key);
       const roomDistance = GrandStrategyPlanner.getDistanceBetweenTwoRooms(key, creep.room.name);
+
+      // If a room I own doesn't have enough creeps, send travelers to help
       if (
         room &&
         roomDistance < 8 &&
@@ -132,32 +134,21 @@ export class GrandStrategyPlanner {
         helpRoom = room.name;
         return;
       }
+      // Send travelers to reserved rooms, sendBuilder rooms, or mining status rooms
       if (
-        (room &&
+        ((room &&
           room.controller &&
           room.controller.reservation &&
           room.controller.reservation.username === Memory.username) ||
-        (room && room.memory.sendBuilders) ||
-        (roomDistance < 2 && creep.room.findExitTo(key) !== ERR_NO_PATH)
+          (room && room.memory.sendBuilders) ||
+          (Memory.roomData[key] as GlobalRoomMemory).status === "mine") &&
+        roomDistance < 2 &&
+        creep.room.findExitTo(key) !== ERR_NO_PATH
       ) {
-        let energyInContainers = 0;
-        if (room) {
-          _.forEach(
-            room.find(FIND_STRUCTURES, {
-              filter: (s: Structure) => {
-                return s.structureType === STRUCTURE_CONTAINER;
-              }
-            }),
-            (s: StructureContainer) => {
-              energyInContainers += s.store.getUsedCapacity(RESOURCE_ENERGY);
-            }
-          );
-        }
-        const hasHostiles = GrandStrategyPlanner.hasHostilesInRoom(key);
+        const energyInContainers = this.countEnergyAvailableInContainers(room);
         if (
-          !hasHostiles &&
+          !GrandStrategyPlanner.hasHostilesInRoom(key) &&
           (helpRoom === null ||
-            !room ||
             (Memory.roomData[key] as GlobalRoomMemory).travelers.length - 4 < Math.max(2, numberOfSpots) ||
             energyInContainers > 500)
         ) {
@@ -166,10 +157,27 @@ export class GrandStrategyPlanner {
       }
     });
     if (helpRoom !== null) {
-      console.log("sending traveler to " + <string>(<unknown>helpRoom));
+      console.log("sending traveler " + creep.id + " to " + <string>(<unknown>helpRoom) + " from " + creep.room.name);
       (Memory.roomData[helpRoom] as GlobalRoomMemory).travelers.push(creep.id);
     }
     return helpRoom;
+  }
+
+  public static countEnergyAvailableInContainers(room: Room): number {
+    let energyInContainers = 0;
+    if (room) {
+      _.forEach(
+        room.find(FIND_STRUCTURES, {
+          filter: (s: Structure) => {
+            return s.structureType === STRUCTURE_CONTAINER;
+          }
+        }),
+        (s: StructureContainer) => {
+          energyInContainers += s.store.getUsedCapacity(RESOURCE_ENERGY);
+        }
+      );
+    }
+    return energyInContainers;
   }
 
   public static hasHostilesInRoom(roomName: string): boolean {
@@ -269,6 +277,19 @@ export class GrandStrategyPlanner {
       }
       GrandStrategyPlanner.cleanupTravelerArray(key);
       if (GrandStrategyPlanner.getDistanceBetweenTwoRooms(key, roomName) > 8) {
+        return;
+      }
+      const room = Game.rooms[key];
+      const shouldDefendRoom = (room && room.controller && room.controller.my) || (room && roomData.status === "mine");
+      if (
+        !shouldDefendRoom &&
+        ((Memory.roomData[key] as GlobalRoomMemory).hostileMelee > 0 ||
+          (Memory.roomData[key] as GlobalRoomMemory).hostileRanged > 0 ||
+          (Memory.roomData[key] as GlobalRoomMemory).hostileHealer > 0)
+      ) {
+        return;
+      }
+      if (!shouldDefendRoom && (Memory.roomData[key] as GlobalRoomMemory).defenders.length > 8) {
         return;
       }
       hostileRoom = key;

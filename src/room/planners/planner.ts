@@ -154,13 +154,11 @@ export class Planner {
     if (containerPos && linkPos) {
       return;
     }
-    console.log("positionMap size " + <string>(<unknown>Object.keys(positionMap).length));
     for (const key in positionMap) {
       if (key && positionMap[key]) {
         const cPos: RoomPosition = <RoomPosition>positionMap[key];
         if (!containerPos) {
           containerPos = cPos;
-          console.log("new container at " + <string>(<unknown>cPos.x) + "x " + <string>(<unknown>cPos.y) + "y");
           (room.memory.sites[0] as Map<string, StructureConstant>)[key] = STRUCTURE_CONTAINER;
         } else if (!linkPos) {
           linkPos = cPos;

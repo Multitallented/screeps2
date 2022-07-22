@@ -2,6 +2,7 @@ import * as _ from "lodash";
 import { Builder } from "../../creeps/roles/builder";
 import { CreepRoleEnum } from "../../creeps/roles/creep-role-enum";
 import { CreepSpawnData } from "../../creeps/creep-spawn-data";
+import { GrandStrategyPlanner } from "../../war/grand-strategy-planner";
 import { Miner } from "../../creeps/roles/miner";
 import { Planner } from "./planner";
 import { ReassignRole, RoomPlannerInterface } from "./room-planner-interface";
@@ -19,6 +20,14 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
   buildMemory() {
     if (this.room.memory.complete) {
       return;
+    }
+    if (!Memory.roomData[this.room.name]) {
+      Memory.roomData[this.room.name] = {} as GlobalRoomMemory;
+    }
+    if (GrandStrategyPlanner.hasHostilesInRoom(this.room.name)) {
+      delete (Memory.roomData[this.room.name] as GlobalRoomMemory).status;
+    } else {
+      (Memory.roomData[this.room.name] as GlobalRoomMemory).status = "mine";
     }
     if (!this.room.memory.sites) {
       this.initSitesArrays(this.room);
