@@ -103,7 +103,6 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
 
   public getNextCreepToSpawn(): CreepSpawnData | null {
     const transports = this.room.getNumberOfCreepsByRole(Transport.KEY);
-    const travelers = this.room.getNumberOfCreepsByRole(Traveler.KEY);
     const builders = this.room.getNumberOfCreepsByRole(Builder.KEY);
     const upgraders = this.room.getNumberOfCreepsByRole(Upgrader.KEY);
     const miners = this.room.getNumberOfCreepsByRole(Miner.KEY);
@@ -188,7 +187,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       );
     } else if (
       (upgraders + 1 < Math.max(2, this.room.getTotalNumberOfMiningSpaces()) && upgraders / 2 <= builders) ||
-      (this.room.energyAvailable > 600 && upgraders < 4)
+      (this.room.energyAvailable > 600 && upgraders < 3)
     ) {
       return CreepSpawnData.build(
         Upgrader.KEY,
@@ -204,20 +203,28 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     } else if (GrandStrategyPlanner.canClaimAnyRoom()) {
       // TODO only build 1 for the room
       return CreepSpawnData.build(Claimer.KEY, CreepBodyBuilder.buildClaimer(), 0.5);
-    } else if (this.room.energyAvailable > 600 && travelers < sources && (upgraders > 2 || travelers < 1)) {
+    }
+    const travelerRoom = GrandStrategyPlanner.findTravelerDestinationRoom(this.room.name, null);
+    if (travelerRoom && this.room.energyAvailable > 600 && upgraders > 2) {
       return CreepSpawnData.build(
         Traveler.KEY,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 450)),
         1
       );
     } else if (
+      travelerRoom &&
       this.room.energyAvailable > this.room.energyCapacityAvailable * 0.9 &&
-      this.room.energyAvailable > 600 &&
-      travelers < sources * 2
+      this.room.energyAvailable > 600
     ) {
       return CreepSpawnData.build(
         Traveler.KEY,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 600)),
+        1
+      );
+    } else if (this.room.energyAvailable > this.room.energyCapacityAvailable * 0.9 && upgraders < 4) {
+      return CreepSpawnData.build(
+        CreepRoleEnum.UPGRADER,
+        CreepBodyBuilder.buildBasicWorker(this.room.energyAvailable),
         1
       );
     }

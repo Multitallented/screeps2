@@ -72,7 +72,7 @@ export class Traveler {
   }
 
   public static getNextRoom(creep: Creep): void {
-    const helpRoom = GrandStrategyPlanner.findTravelerDestinationRoom(creep);
+    const helpRoom = GrandStrategyPlanner.findTravelerDestinationRoom(creep.room.name, creep);
     if (!helpRoom) {
       LeaveRoomAction.setAction(creep, null);
     } else {

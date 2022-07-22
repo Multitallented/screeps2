@@ -1,4 +1,5 @@
 import * as _ from "lodash";
+import { Util } from "../utils/util";
 
 export class GrandStrategyPlanner {
   public static getBestRoomToClaim(room: Room, reserve: boolean): string | null {
@@ -98,14 +99,18 @@ export class GrandStrategyPlanner {
     });
   }
 
-  public static findTravelerDestinationRoom(creep: Creep): string | null {
+  public static findTravelerDestinationRoom(roomName: string, creep: Creep | null): string | null {
     let helpRoom: string | null = null;
+    const currentRoom = Game.rooms[roomName];
+    if (!currentRoom) {
+      return null;
+    }
     _.forEach(Memory.roomData, (roomData: GlobalRoomMemory, key) => {
       if (!key) {
         return;
       }
       const room: Room = Game.rooms[key];
-      if (key === creep.memory.endRoom) {
+      if (creep && key === creep.memory.endRoom) {
         return;
       }
       let numberOfSpots = 0;
@@ -121,7 +126,7 @@ export class GrandStrategyPlanner {
         }
       }
       GrandStrategyPlanner.cleanupTravelerArray(key);
-      const roomDistance = GrandStrategyPlanner.getDistanceBetweenTwoRooms(key, creep.room.name);
+      const roomDistance = GrandStrategyPlanner.getDistanceBetweenTwoRooms(key, roomName);
 
       // If a room I own doesn't have enough creeps, send travelers to help
       if (
@@ -135,6 +140,21 @@ export class GrandStrategyPlanner {
         return;
       }
       // Send travelers to reserved rooms, sendBuilder rooms, or mining status rooms
+      const exit = currentRoom.findExitTo(key);
+      let roomIsOneRoomAway = false;
+      if (
+        exit &&
+        (exit === FIND_EXIT_BOTTOM || exit === FIND_EXIT_LEFT || exit === FIND_EXIT_RIGHT || exit === FIND_EXIT_TOP)
+      ) {
+        const isWest = roomName.indexOf("W") !== -1;
+        const isNorth = roomName.indexOf("N") !== -1;
+        const splitName = roomName.slice(1).split(isNorth ? "N" : "S");
+        const x = Number(splitName[0]);
+        const y = Number(splitName[1]);
+        const roomExit = Util.getRoomKey(exit, isWest, isNorth, x, y);
+        roomIsOneRoomAway = roomExit === key;
+      }
+
       if (
         ((room &&
           room.controller &&
@@ -143,7 +163,7 @@ export class GrandStrategyPlanner {
           (room && room.memory.sendBuilders) ||
           (Memory.roomData[key] as GlobalRoomMemory).status === "mine") &&
         roomDistance < 2 &&
-        creep.room.findExitTo(key) !== ERR_NO_PATH
+        roomIsOneRoomAway
       ) {
         const energyInContainers = this.countEnergyAvailableInContainers(room);
         if (
@@ -156,8 +176,8 @@ export class GrandStrategyPlanner {
         }
       }
     });
-    if (helpRoom !== null) {
-      console.log("sending traveler " + creep.id + " to " + <string>(<unknown>helpRoom) + " from " + creep.room.name);
+    if (helpRoom !== null && creep) {
+      console.log("sending traveler " + creep.id + " to " + <string>(<unknown>helpRoom) + " from " + roomName);
       (Memory.roomData[helpRoom] as GlobalRoomMemory).travelers.push(creep.id);
     }
     return helpRoom;
