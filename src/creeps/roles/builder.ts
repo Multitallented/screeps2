@@ -26,6 +26,48 @@ export class Builder {
     creep.runAction();
   }
 
+  public static roomHasBuilderJobs(room: Room): boolean {
+    const repairThese = _.sortBy(
+      room.find(FIND_STRUCTURES, {
+        filter: (s: Structure) => {
+          return (
+            ((s.structureType !== STRUCTURE_RAMPART && s.structureType !== STRUCTURE_WALL) || s.hits < 1000) &&
+            s.hits / s.hitsMax < 0.75 &&
+            s.hits < 250000
+          );
+        }
+      }),
+      (s: Structure) => {
+        return s.hits;
+      }
+    );
+    if (repairThese.length > 0) {
+      return true;
+    }
+    const site = room.find(FIND_CONSTRUCTION_SITES);
+    if (site) {
+      return true;
+    }
+    const repairThese2 = _.sortBy(
+      room.find(FIND_STRUCTURES, {
+        filter: (s: Structure) => {
+          return (
+            (s.structureType === STRUCTURE_RAMPART || s.structureType === STRUCTURE_WALL) &&
+            s.hits / s.hitsMax < 0.75 &&
+            s.hits < 250000
+          );
+        }
+      }),
+      (s: Structure) => {
+        return -1 * s.hits;
+      }
+    );
+    if (repairThese2.length > 0) {
+      return true;
+    }
+    return false;
+  }
+
   public static findNextJob(creep: Creep): void {
     const repairThese = _.sortBy(
       creep.room.find(FIND_STRUCTURES, {

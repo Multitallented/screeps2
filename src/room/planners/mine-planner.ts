@@ -37,9 +37,6 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
 
   getNextReassignRole(): ReassignRole | null {
     const travelers = this.room.getNumberOfCreepsByRole(Traveler.KEY);
-    if (travelers < 1) {
-      return null;
-    }
     const miners = this.room.getNumberOfCreepsByRole(Miner.KEY);
     const constructionSites = this.room.find(FIND_CONSTRUCTION_SITES).length;
     const builders = this.room.getNumberOfCreepsByRole(Builder.KEY);
@@ -48,7 +45,19 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
         return s.structureType === STRUCTURE_CONTAINER;
       }
     });
-    if ((builders < 2 && constructionSites > 0) || builders < 1) {
+    let hasRoomForEnergy = false;
+    _.forEach(containers, (container: StructureContainer) => {
+      if (container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+        hasRoomForEnergy = true;
+      }
+    });
+    if (!hasRoomForEnergy && miners > 0) {
+      return { newRole: CreepRoleEnum.TRAVELER, oldRole: CreepRoleEnum.MINER, type: "all" };
+    }
+    if (travelers < 1) {
+      return null;
+    }
+    if (((builders < 2 && constructionSites > 0) || builders < 1) && Builder.roomHasBuilderJobs(this.room)) {
       return { newRole: CreepRoleEnum.BUILDER, oldRole: CreepRoleEnum.TRAVELER, type: "single" };
     }
     let freeContainers = false;

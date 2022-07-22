@@ -177,6 +177,42 @@ function initCreepCountArray(room: Room): void {
     });
   }
 }
+function reassignCreepAndUpdateTravelerMemory(creep: Creep, newRole: CreepRoleEnum) {
+  const oldRole: CreepRoleEnum = creep.memory.role as CreepRoleEnum;
+  if (oldRole === CreepRoleEnum.TRAVELER) {
+    if (
+      !(
+        Memory.roomData[creep.room.name] &&
+        (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers &&
+        (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers.indexOf(creep.id) !== -1
+      )
+    ) {
+      _.forEach(Memory.roomData, (roomData: GlobalRoomMemory) => {
+        if (roomData.travelers && roomData.travelers.indexOf(creep.id) !== -1) {
+          roomData.travelers.splice(roomData.travelers.indexOf(creep.id), 1);
+        }
+      });
+      if (!Memory.roomData[creep.room.name]) {
+        Memory.roomData[creep.room.name] = {} as GlobalRoomMemory;
+      }
+      if (!(Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers) {
+        (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers = new Array<Id<_HasId>>();
+      }
+      (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers.push(creep.id);
+    }
+  }
+  creep.memory.role = newRole;
+  delete creep.memory.action;
+  delete creep.memory.target;
+  delete creep.memory.fromRoom;
+  delete creep.memory.originRoom;
+  delete creep.memory.toRoom;
+  delete creep.memory.endRoom;
+  delete creep.memory.wait;
+  delete creep.memory.actionSwitched;
+  delete creep.memory.destination;
+  return oldRole;
+}
 
 const reassignAllCreeps = function (this: Room, newRole: CreepRoleEnum, filter: (creep: Creep) => boolean) {
   if (this.memory.creepCount == null) {
@@ -185,17 +221,7 @@ const reassignAllCreeps = function (this: Room, newRole: CreepRoleEnum, filter: 
   let creepReassigned = false;
   _.forEach(this.find(FIND_MY_CREEPS), (creep: Creep) => {
     if (!creepReassigned && filter(creep)) {
-      const oldRole: CreepRoleEnum = creep.memory.role as CreepRoleEnum;
-      creep.memory.role = newRole;
-      delete creep.memory.action;
-      delete creep.memory.target;
-      delete creep.memory.fromRoom;
-      delete creep.memory.originRoom;
-      delete creep.memory.toRoom;
-      delete creep.memory.endRoom;
-      delete creep.memory.wait;
-      delete creep.memory.actionSwitched;
-      delete creep.memory.destination;
+      const oldRole = reassignCreepAndUpdateTravelerMemory(creep, newRole);
       creepReassigned = true;
       incrementAndDecrement(creep.room, newRole, oldRole);
     }
@@ -209,17 +235,7 @@ const reassignSingleCreep = function (this: Room, newRole: CreepRoleEnum, filter
   let reassigned = false;
   _.forEach(this.find(FIND_MY_CREEPS), (creep: Creep) => {
     if (!reassigned && filter(creep)) {
-      const oldRole: CreepRoleEnum = creep.memory.role as CreepRoleEnum;
-      creep.memory.role = newRole;
-      delete creep.memory.action;
-      delete creep.memory.target;
-      delete creep.memory.fromRoom;
-      delete creep.memory.originRoom;
-      delete creep.memory.toRoom;
-      delete creep.memory.endRoom;
-      delete creep.memory.wait;
-      delete creep.memory.actionSwitched;
-      delete creep.memory.destination;
+      const oldRole = reassignCreepAndUpdateTravelerMemory(creep, newRole);
       incrementAndDecrement(creep.room, newRole, oldRole);
       reassigned = true;
     }
