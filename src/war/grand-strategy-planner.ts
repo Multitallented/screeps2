@@ -100,6 +100,9 @@ export class GrandStrategyPlanner {
   }
 
   public static findTravelerDestinationRoom(roomName: string, creep: Creep | null): string | null {
+    if (creep && creep.memory.travel) {
+      return creep.memory.travel;
+    }
     let helpRoom: string | null = null;
     const currentRoom = Game.rooms[roomName];
     if (!currentRoom) {
@@ -178,6 +181,7 @@ export class GrandStrategyPlanner {
     });
     if (helpRoom !== null && creep) {
       console.log("sending traveler " + creep.id + " to " + <string>(<unknown>helpRoom) + " from " + roomName);
+      creep.memory.travel = helpRoom;
       (Memory.roomData[helpRoom] as GlobalRoomMemory).travelers.push(creep.id);
     }
     return helpRoom;

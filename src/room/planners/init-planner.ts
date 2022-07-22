@@ -1,17 +1,17 @@
 import * as _ from "lodash";
-import { Builder } from "../../creeps/roles/builder";
-import { Claimer } from "../../creeps/roles/claimer";
-import { ConstructionSiteData } from "../../structures/construction/construction-site-data";
-import { CreepBodyBuilder } from "../../creeps/creep-body-builder";
-import { CreepRoleEnum } from "../../creeps/roles/creep-role-enum";
-import { CreepSpawnData } from "../../creeps/creep-spawn-data";
-import { GrandStrategyPlanner } from "../../war/grand-strategy-planner";
-import { Miner } from "../../creeps/roles/miner";
-import { Planner } from "./planner";
-import { RoomPlannerInterface } from "./room-planner-interface";
-import { Transport } from "../../creeps/roles/transport";
-import { Traveler } from "../../creeps/roles/traveler";
-import { Upgrader } from "../../creeps/roles/upgrader";
+import {Builder} from "../../creeps/roles/builder";
+import {Claimer} from "../../creeps/roles/claimer";
+import {ConstructionSiteData} from "../../structures/construction/construction-site-data";
+import {CreepBodyBuilder} from "../../creeps/creep-body-builder";
+import {CreepRoleEnum} from "../../creeps/roles/creep-role-enum";
+import {CreepSpawnData} from "../../creeps/creep-spawn-data";
+import {GrandStrategyPlanner} from "../../war/grand-strategy-planner";
+import {Miner} from "../../creeps/roles/miner";
+import {Planner} from "./planner";
+import {RoomPlannerInterface} from "./room-planner-interface";
+import {Transport} from "../../creeps/roles/transport";
+import {Traveler} from "../../creeps/roles/traveler";
+import {Upgrader} from "../../creeps/roles/upgrader";
 
 export class InitPlanner extends Planner implements RoomPlannerInterface {
   private readonly room: Room;
@@ -22,7 +22,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     this.room = room;
   }
 
-  public getNextReassignRole() {
+  public getNextReassignRole(force?: boolean) {
     const travelers = this.room.getNumberOfCreepsByRole(Traveler.KEY);
     const transports = this.room.getNumberOfCreepsByRole(Transport.KEY);
     const builders = this.room.getNumberOfCreepsByRole(Builder.KEY);
@@ -67,6 +67,16 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     }
     if (((upgraders / 2 > builders && constructionSites > 0) || builders < 1) && upgraders > 1) {
       return { newRole: CreepRoleEnum.BUILDER, oldRole: CreepRoleEnum.UPGRADER, type: "single" };
+    }
+    if (upgraders > 4 && GrandStrategyPlanner.findTravelerDestinationRoom(this.room.name, null)) {
+      return { newRole: CreepRoleEnum.TRAVELER, oldRole: CreepRoleEnum.UPGRADER, type: "single" };
+    }
+    if (force) {
+      if (constructionSites > 0) {
+        return { newRole: CreepRoleEnum.BUILDER, oldRole: CreepRoleEnum.TRAVELER, type: "single" };
+      } else {
+        return { newRole: CreepRoleEnum.UPGRADER, oldRole: CreepRoleEnum.TRAVELER, type: "single" };
+      }
     }
     return null;
   }

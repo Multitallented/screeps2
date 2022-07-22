@@ -1,12 +1,12 @@
 import * as _ from "lodash";
-import { Builder } from "../../creeps/roles/builder";
-import { CreepRoleEnum } from "../../creeps/roles/creep-role-enum";
-import { CreepSpawnData } from "../../creeps/creep-spawn-data";
-import { GrandStrategyPlanner } from "../../war/grand-strategy-planner";
-import { Miner } from "../../creeps/roles/miner";
-import { Planner } from "./planner";
-import { ReassignRole, RoomPlannerInterface } from "./room-planner-interface";
-import { Traveler } from "../../creeps/roles/traveler";
+import {Builder} from "../../creeps/roles/builder";
+import {CreepRoleEnum} from "../../creeps/roles/creep-role-enum";
+import {CreepSpawnData} from "../../creeps/creep-spawn-data";
+import {GrandStrategyPlanner} from "../../war/grand-strategy-planner";
+import {Miner} from "../../creeps/roles/miner";
+import {Planner} from "./planner";
+import {ReassignRole, RoomPlannerInterface} from "./room-planner-interface";
+import {Traveler} from "../../creeps/roles/traveler";
 
 export class MinePlanner extends Planner implements RoomPlannerInterface {
   private room: Room;
@@ -44,7 +44,7 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
     }
   }
 
-  getNextReassignRole(): ReassignRole | null {
+  getNextReassignRole(force?: boolean): ReassignRole | null {
     const travelers = this.room.getNumberOfCreepsByRole(Traveler.KEY);
     const miners = this.room.getNumberOfCreepsByRole(Miner.KEY);
     const constructionSites = this.room.find(FIND_CONSTRUCTION_SITES).length;
@@ -88,6 +88,9 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
     }
     if (!freeContainers) {
       return { newRole: CreepRoleEnum.TRAVELER, oldRole: CreepRoleEnum.MINER, type: "all" };
+    }
+    if (force) {
+      return { newRole: CreepRoleEnum.BUILDER, oldRole: CreepRoleEnum.TRAVELER, type: "single" };
     }
     return null;
   }

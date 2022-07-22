@@ -3,7 +3,7 @@ import { CreepSpawnData } from "../../creeps/creep-spawn-data";
 
 export interface RoomPlannerInterface {
   reassignCreeps();
-  getNextReassignRole(): ReassignRole | null;
+  getNextReassignRole(force?: boolean): ReassignRole | null;
   buildMemory();
   getNextCreepToSpawn(): CreepSpawnData | null;
 }

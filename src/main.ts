@@ -55,6 +55,7 @@ declare global {
     originRoom?: string;
     toRoom?: string;
     endRoom?: string;
+    travel?: string;
     resourceType?: ResourceConstant;
     source?: Id<_HasId>;
     wait?: string;

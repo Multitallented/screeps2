@@ -14,7 +14,7 @@ export class VoidPlanner extends Planner implements RoomPlannerInterface {
     this.populateSourcesMemory(this.room);
   }
 
-  getNextReassignRole() {
+  getNextReassignRole(force?: boolean) {
     return null;
   }
 

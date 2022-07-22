@@ -355,13 +355,13 @@ const isOpen = function (s: LookAtResultWithPos): boolean {
   return !((s.type !== "terrain" || s.terrain !== "wall") && s.type !== "structure" && s.type !== "constructionSite");
 };
 
-const reassignIdleCreep = function (this: Room, creep: Creep) {
+const reassignIdleCreep = function (this: Room, creep: Creep, force?: boolean) {
   const oldRole: CreepRoleEnum = creep.memory.role as CreepRoleEnum;
   if (oldRole === Transport.KEY || oldRole === Miner.KEY) {
     WaitAction.setActionUntilNextTick(creep);
     return;
   }
-  const newRoleObj = getPlanner(this).getNextReassignRole();
+  const newRoleObj = getPlanner(this).getNextReassignRole(force);
   if (newRoleObj == null) {
     if (oldRole === Traveler.KEY) {
       Traveler.getNextRoom(creep);
@@ -399,7 +399,7 @@ declare global {
     makeConstructionSites();
     isSpotOpen(pos: RoomPosition): boolean;
     isOpen(s: LookAtResultWithPos): boolean;
-    reassignIdleCreep(creep: Creep);
+    reassignIdleCreep(creep: Creep, force?: boolean);
     getAdjacentRoomName(direction: ExitConstant): string;
     incrementAndDecrement(room: Room, increment: CreepRoleEnum, decrement: CreepRoleEnum | null): void;
   }
