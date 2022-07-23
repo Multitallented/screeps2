@@ -14,13 +14,13 @@ export class Util {
       if (isWest) {
         return "W" + <string>(<unknown>(x + 1)) + (isNorth ? "N" : "S") + <string>(<unknown>y);
       } else {
-        return "W" + <string>(<unknown>(x - 1)) + (isNorth ? "N" : "S") + <string>(<unknown>y);
+        return "E" + <string>(<unknown>(x - 1)) + (isNorth ? "N" : "S") + <string>(<unknown>y);
       }
     } else if (direction === FIND_EXIT_RIGHT) {
       if (isWest) {
         return "W" + <string>(<unknown>(x - 1)) + (isNorth ? "N" : "S") + <string>(<unknown>y);
       } else {
-        return "W" + <string>(<unknown>(x + 1)) + (isNorth ? "N" : "S") + <string>(<unknown>y);
+        return "E" + <string>(<unknown>(x + 1)) + (isNorth ? "N" : "S") + <string>(<unknown>y);
       }
     } else if (direction === FIND_EXIT_BOTTOM) {
       if (isNorth) {

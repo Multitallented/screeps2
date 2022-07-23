@@ -164,7 +164,7 @@ export class GrandStrategyPlanner {
           room.controller.reservation &&
           room.controller.reservation.username === Memory.username) ||
           (room && room.memory.sendBuilders) ||
-          (Memory.roomData[key] as GlobalRoomMemory).status === "mine") &&
+          roomData.status === "mine") &&
         roomDistance < 2 &&
         roomIsOneRoomAway
       ) {

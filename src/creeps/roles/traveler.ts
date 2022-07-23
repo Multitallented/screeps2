@@ -5,6 +5,7 @@ import { MineEnergyAction } from "../actions/mine-energy";
 import { TransferAction } from "../actions/transfer";
 import { TravelingAction } from "../actions/traveling";
 import { WithdrawAction } from "../actions/withdraw";
+import {MoveAction} from "../actions/move";
 
 export class Traveler {
   static KEY: CreepRoleEnum = CreepRoleEnum.TRAVELER;
@@ -32,10 +33,15 @@ export class Traveler {
               creep.deliverEnergyToSpawner();
             } else {
               creep.memory.homeRoom = creep.room.name;
-              if (!GrandStrategyPlanner.findTravelerDestinationRoom(creep.room.name, creep)) {
+              const travelRoom = GrandStrategyPlanner.findTravelerDestinationRoom(creep.room.name, creep);
+              if (!travelRoom) {
                 creep.room.reassignIdleCreep(creep, true);
               } else {
-                TravelingAction.setAction(creep, new RoomPosition(25, 25, creep.memory.endRoom));
+                if (travelRoom === creep.room.name) {
+                  MoveAction.setActionPos(creep, new RoomPosition(25, 25, travelRoom));
+                } else {
+                  TravelingAction.setAction(creep, new RoomPosition(25, 25, travelRoom));
+                }
               }
             }
           } else if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0 && creep.room.find(FIND_SOURCES).length > 0) {
