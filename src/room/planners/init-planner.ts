@@ -1,17 +1,17 @@
 import * as _ from "lodash";
-import {Builder} from "../../creeps/roles/builder";
-import {Claimer} from "../../creeps/roles/claimer";
-import {ConstructionSiteData} from "../../structures/construction/construction-site-data";
-import {CreepBodyBuilder} from "../../creeps/creep-body-builder";
-import {CreepRoleEnum} from "../../creeps/roles/creep-role-enum";
-import {CreepSpawnData} from "../../creeps/creep-spawn-data";
-import {GrandStrategyPlanner} from "../../war/grand-strategy-planner";
-import {Miner} from "../../creeps/roles/miner";
-import {Planner} from "./planner";
-import {RoomPlannerInterface} from "./room-planner-interface";
-import {Transport} from "../../creeps/roles/transport";
-import {Traveler} from "../../creeps/roles/traveler";
-import {Upgrader} from "../../creeps/roles/upgrader";
+import { Builder } from "../../creeps/roles/builder";
+import { Claimer } from "../../creeps/roles/claimer";
+import { ConstructionSiteData } from "../../structures/construction/construction-site-data";
+import { CreepBodyBuilder } from "../../creeps/creep-body-builder";
+import { CreepRoleEnum } from "../../creeps/roles/creep-role-enum";
+import { CreepSpawnData } from "../../creeps/creep-spawn-data";
+import { GrandStrategyPlanner } from "../../war/grand-strategy-planner";
+import { Miner } from "../../creeps/roles/miner";
+import { Planner } from "./planner";
+import { RoomPlannerInterface } from "./room-planner-interface";
+import { Transport } from "../../creeps/roles/transport";
+import { Traveler } from "../../creeps/roles/traveler";
+import { Upgrader } from "../../creeps/roles/upgrader";
 
 export class InitPlanner extends Planner implements RoomPlannerInterface {
   private readonly room: Room;
@@ -215,6 +215,22 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       return CreepSpawnData.build(Claimer.KEY, CreepBodyBuilder.buildClaimer(), 0.5);
     }
     const travelerRoom = GrandStrategyPlanner.findTravelerDestinationRoom(this.room.name, null);
+    if (travelerRoom && Game.rooms[travelerRoom]) {
+      const travelerRoomActive = Game.rooms[travelerRoom];
+      const claimers = travelerRoomActive.find(FIND_MY_CREEPS, {
+        filter: (c: Creep) => {
+          return c.memory.action === CreepRoleEnum.CLAIMER;
+        }
+      }).length;
+      if (
+        travelerRoomActive.controller &&
+        !travelerRoomActive.controller.my &&
+        claimers < 3 &&
+        (!travelerRoomActive.controller.reservation || travelerRoomActive.controller.reservation.ticksToEnd < 120)
+      ) {
+        return CreepSpawnData.build(CreepRoleEnum.CLAIMER, CreepBodyBuilder.buildClaimer(), 0.5);
+      }
+    }
     if (travelerRoom && this.room.energyAvailable > 600 && upgraders > 2) {
       return CreepSpawnData.build(
         Traveler.KEY,

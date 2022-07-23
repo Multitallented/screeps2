@@ -59,6 +59,7 @@ declare global {
     resourceType?: ResourceConstant;
     source?: Id<_HasId>;
     wait?: string;
+    claim?: string;
   }
 
   interface SourceMemory {
