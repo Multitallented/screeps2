@@ -18,6 +18,11 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
   }
 
   buildMemory() {
+    if (this.room.find(FIND_MY_CONSTRUCTION_SITES).length > 0) {
+      this.room.memory.sendBuilders = true;
+    } else {
+      delete this.room.memory.sendBuilders;
+    }
     if (this.room.memory.complete) {
       return;
     }

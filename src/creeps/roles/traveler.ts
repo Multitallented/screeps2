@@ -28,6 +28,7 @@ export class Traveler {
             return;
           }
         } else {
+          // If the creep has reached the endRoom...
           if (creep.room.controller && creep.room.controller.my) {
             if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
               creep.deliverEnergyToSpawner();
@@ -38,7 +39,13 @@ export class Traveler {
                 creep.room.reassignIdleCreep(creep, true);
               } else {
                 if (travelRoom === creep.room.name) {
-                  MoveAction.setActionPos(creep, new RoomPosition(25, 25, travelRoom));
+                  creep.memory.homeRoom = creep.room.name;
+                  delete creep.memory.endRoom;
+                  delete creep.memory.travel;
+                  Traveler.getNextRoom(creep);
+                  if (!creep.memory.travel) {
+                    creep.room.reassignIdleCreep(creep, true);
+                  }
                 } else {
                   TravelingAction.setAction(creep, new RoomPosition(25, 25, travelRoom));
                 }
@@ -47,7 +54,11 @@ export class Traveler {
           } else if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0 && creep.room.find(FIND_SOURCES).length > 0) {
             creep.goGetEnergy(true, false);
           } else {
-            Traveler.getNextRoom(creep);
+            if (creep.room.name === creep.memory.homeRoom) {
+              Traveler.getNextRoom(creep);
+            } else if (creep.memory.homeRoom) {
+              TravelingAction.setAction(creep, new RoomPosition(25, 25, creep.memory.homeRoom));
+            }
           }
         }
         break;
@@ -76,6 +87,9 @@ export class Traveler {
           }
         } else {
           Traveler.getNextRoom(creep);
+          if (!creep.memory.travel) {
+            creep.room.reassignIdleCreep(creep, true);
+          }
         }
         break;
     }

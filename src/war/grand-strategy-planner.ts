@@ -143,30 +143,33 @@ export class GrandStrategyPlanner {
         return;
       }
       // Send travelers to reserved rooms, sendBuilder rooms, or mining status rooms
-      const exit = currentRoom.findExitTo(key);
-      let roomIsOneRoomAway = false;
-      if (
-        exit &&
-        (exit === FIND_EXIT_BOTTOM || exit === FIND_EXIT_LEFT || exit === FIND_EXIT_RIGHT || exit === FIND_EXIT_TOP)
-      ) {
-        const isWest = roomName.indexOf("W") !== -1;
-        const isNorth = roomName.indexOf("N") !== -1;
-        const splitName = roomName.slice(1).split(isNorth ? "N" : "S");
-        const x = Number(splitName[0]);
-        const y = Number(splitName[1]);
-        const roomExit = Util.getRoomKey(exit, isWest, isNorth, x, y);
-        roomIsOneRoomAway = roomExit === key;
-      }
 
-      if (
-        ((room &&
+      let roomIsOneRoomAway = false;
+      const miningRoom =
+        (room &&
           room.controller &&
           room.controller.reservation &&
           room.controller.reservation.username === Memory.username) ||
-          (room && room.memory.sendBuilders) ||
-          roomData.status === "mine") &&
-        roomDistance < 2 &&
-        roomIsOneRoomAway
+        roomData.status === "mine";
+      if (miningRoom) {
+        const exit = currentRoom.findExitTo(key);
+        if (
+          exit &&
+          (exit === FIND_EXIT_BOTTOM || exit === FIND_EXIT_LEFT || exit === FIND_EXIT_RIGHT || exit === FIND_EXIT_TOP)
+        ) {
+          const isWest = roomName.indexOf("W") !== -1;
+          const isNorth = roomName.indexOf("N") !== -1;
+          const splitName = roomName.slice(1).split(isNorth ? "N" : "S");
+          const x = Number(splitName[0]);
+          const y = Number(splitName[1]);
+          const roomExit = Util.getRoomKey(exit, isWest, isNorth, x, y);
+          roomIsOneRoomAway = roomExit === key;
+        }
+      }
+
+      if (
+        (miningRoom && roomDistance < 2 && roomIsOneRoomAway) ||
+        (roomDistance < 3 && room && room.memory.sendBuilders)
       ) {
         const energyInContainers = this.countEnergyAvailableInContainers(room);
         if (
