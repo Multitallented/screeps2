@@ -42,6 +42,12 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
     if (this.populateContainerMemory(this.room)) {
       return;
     }
+    if (this.planSourceRoads(this.room)) {
+      return;
+    }
+    if (this.planExitRoads(this.room)) {
+      return;
+    }
   }
 
   getNextReassignRole(force?: boolean): ReassignRole | null {
@@ -70,14 +76,11 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
       return { newRole: CreepRoleEnum.BUILDER, oldRole: CreepRoleEnum.TRAVELER, type: "single" };
     }
     let freeContainers = false;
-    let containersWithEnergy = false;
+    let containersWithEnergy = 0;
     for (const container of containers) {
-      if (container.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-        containersWithEnergy = true;
-      }
+      containersWithEnergy += container.store.getUsedCapacity(RESOURCE_ENERGY);
       if (container.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
         freeContainers = true;
-        break;
       }
     }
     if (!containersWithEnergy && miners < containers.length) {
@@ -88,6 +91,9 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
     }
     if (!freeContainers) {
       return { newRole: CreepRoleEnum.TRAVELER, oldRole: CreepRoleEnum.MINER, type: "all" };
+    }
+    if (containersWithEnergy < 1 && constructionSites > 0) {
+      return { newRole: CreepRoleEnum.BUILDER, oldRole: CreepRoleEnum.TRAVELER, type: "all" };
     }
     if (force) {
       return { newRole: CreepRoleEnum.BUILDER, oldRole: CreepRoleEnum.TRAVELER, type: "single" };

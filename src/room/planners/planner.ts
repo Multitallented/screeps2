@@ -81,6 +81,53 @@ export class Planner {
     return false;
   }
 
+  public planSourceRoads(room: Room): boolean {
+    if (!room.memory.sourceRoads) {
+      const pointsOfImportance: Array<any> = room.find(FIND_SOURCES);
+      pointsOfImportance.push(room.controller);
+
+      _.forEach(pointsOfImportance, (origin: RoomObject) => {
+        _.forEach(pointsOfImportance, (destination: RoomObject) => {
+          if (!origin || !destination || origin === destination) {
+            return;
+          }
+          const path: Array<PathStep> = origin.pos.findPathTo(destination.pos.x, destination.pos.y, {
+            ignoreCreeps: true,
+            costCallback: getPlannedCostMatrix(room)
+          });
+          planRoadAlongPath(room, path);
+        });
+      });
+
+      room.memory.sourceRoads = true;
+      return true;
+    }
+    return false;
+  }
+
+  public planExitRoads(room: Room): boolean {
+    if (!room.memory.exitRoads && room.memory.center) {
+      const directions: Array<ExitConstant> = [FIND_EXIT_TOP, FIND_EXIT_LEFT, FIND_EXIT_BOTTOM, FIND_EXIT_RIGHT];
+      _.forEach(directions, (direction: ExitConstant) => {
+        const startPosition: RoomPosition | null = room.getPositionAt(25, 25);
+        if (!startPosition) {
+          return;
+        }
+        const exitPoint: RoomPosition | null = startPosition.findClosestByPath(direction);
+        if (exitPoint) {
+          const path: Array<PathStep> = startPosition.findPathTo(exitPoint.x, exitPoint.y, {
+            ignoreCreeps: true,
+            costCallback: getPlannedCostMatrix(room)
+          });
+          planRoadAlongPath(room, path);
+        }
+      });
+      room.memory.exitRoads = true;
+      return true;
+    }
+    return false;
+  }
+
   public initSitesArrays(room: Room): void {
     if (!room.memory.sites || Object.keys(room.memory.sites).length < 1) {
       room.memory.sites = {} as Map<number, Map<string, StructureConstant>>;
@@ -246,5 +293,39 @@ export class Planner {
     const x = Math.round(minX + Math.floor(Math.abs(maxX - minX) / 2));
     const y = Math.round(minY + Math.floor(Math.abs(maxY - minY) / 2));
     return new RoomPosition(x, y, roomName);
+  }
+}
+
+function getPlannedCostMatrix(room: Room) {
+  return (roomName: string, costMatrix: CostMatrix): CostMatrix => {
+    if (roomName === room.name && room.memory.sites !== undefined) {
+      for (let i = 0; i < 9; i++) {
+        _.forEach(room.memory.sites[i], (value, key) => {
+          if (value !== STRUCTURE_ROAD && key) {
+            costMatrix.set(+key.split(":")[0], +key.split(":")[1], 256);
+          }
+        });
+      }
+    }
+    return costMatrix;
+  };
+}
+
+function planRoadAlongPath(room: Room, path: Array<PathStep>) {
+  if (path != null && path.length > 0) {
+    _.forEach(path, (pathStep: PathStep) => {
+      if (
+        room.memory.sites !== undefined &&
+        pathStep.x !== 0 &&
+        pathStep.y !== 0 &&
+        pathStep.x !== 49 &&
+        pathStep.y !== 49 &&
+        !Planner.hasPlannedStructureAt(new RoomPosition(pathStep.x, pathStep.y, room.name), true)
+      ) {
+        (room.memory.sites[0] as Map<string, StructureConstant>)[
+          <string>(<unknown>pathStep.x) + ":" + <string>(<unknown>pathStep.y)
+        ] = STRUCTURE_ROAD;
+      }
+    });
   }
 }
