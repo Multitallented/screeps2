@@ -64,7 +64,12 @@ export class Planner {
         containerLocationsNeeded.push(room.controller);
         this.placeContainerAndLink(room.controller.pos, 5);
       }
-      room.memory.center = <RoomPosition>room.getPositionAt(25, 25);
+      const centerPos = this.getFirstOpenAdjacentSpot(<RoomPosition>room.getPositionAt(25, 25));
+      if (centerPos) {
+        room.memory.center = centerPos;
+      } else {
+        room.memory.center = <RoomPosition>room.getPositionAt(25, 25);
+      }
       if (containerLocationsNeeded.length) {
         room.memory.center = this.getCenterOfArray(containerLocationsNeeded, room);
       }
@@ -109,7 +114,10 @@ export class Planner {
     if (!room.memory.exitRoads && room.memory.center) {
       const directions: Array<ExitConstant> = [FIND_EXIT_TOP, FIND_EXIT_LEFT, FIND_EXIT_BOTTOM, FIND_EXIT_RIGHT];
       _.forEach(directions, (direction: ExitConstant) => {
-        const startPosition: RoomPosition | null = room.getPositionAt(25, 25);
+        if (!room.memory.center) {
+          return;
+        }
+        const startPosition: RoomPosition | null = room.getPositionAt(room.memory.center.x, room.memory.center.y);
         if (!startPosition) {
           return;
         }

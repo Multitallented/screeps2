@@ -8,6 +8,12 @@ export class TravelingAction {
     if (creep.fatigue > 0) {
       return;
     }
+    if (creep.memory.endRoom && creep.memory.destination === null) {
+      delete creep.memory.action;
+      delete creep.memory.destination;
+      creep.setNextAction();
+      return;
+    }
     if (!creep.memory.endRoom) {
       delete creep.memory.destination;
       delete creep.memory.toRoom;

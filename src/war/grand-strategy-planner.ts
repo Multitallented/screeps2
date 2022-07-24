@@ -166,7 +166,8 @@ export class GrandStrategyPlanner {
         const energyInContainers = this.countEnergyAvailableInContainers(room);
         if (
           !GrandStrategyPlanner.hasHostilesInRoom(key) &&
-          (roomData.travelers.length - 4 < Math.max(2, numberOfSpots) || energyInContainers > 500)
+          (roomData.travelers.length - 4 < Math.max(2, numberOfSpots) ||
+            (energyInContainers > 500 && roomData.travelers.length - 10 < Math.max(2, numberOfSpots)))
         ) {
           helpRoom = key;
         }

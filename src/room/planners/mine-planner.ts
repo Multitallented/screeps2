@@ -1,12 +1,12 @@
 import * as _ from "lodash";
-import {Builder} from "../../creeps/roles/builder";
-import {CreepRoleEnum} from "../../creeps/roles/creep-role-enum";
-import {CreepSpawnData} from "../../creeps/creep-spawn-data";
-import {GrandStrategyPlanner} from "../../war/grand-strategy-planner";
-import {Miner} from "../../creeps/roles/miner";
-import {Planner} from "./planner";
-import {ReassignRole, RoomPlannerInterface} from "./room-planner-interface";
-import {Traveler} from "../../creeps/roles/traveler";
+import { Builder } from "../../creeps/roles/builder";
+import { CreepRoleEnum } from "../../creeps/roles/creep-role-enum";
+import { CreepSpawnData } from "../../creeps/creep-spawn-data";
+import { GrandStrategyPlanner } from "../../war/grand-strategy-planner";
+import { Miner } from "../../creeps/roles/miner";
+import { Planner } from "./planner";
+import { ReassignRole, RoomPlannerInterface } from "./room-planner-interface";
+import { Traveler } from "../../creeps/roles/traveler";
 
 export class MinePlanner extends Planner implements RoomPlannerInterface {
   private room: Room;
@@ -42,6 +42,25 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
       return;
     }
     if (this.populateSourcesMemory(this.room)) {
+      return;
+    }
+    if (!this.room.memory.exits || this.room.memory.exits[FIND_EXIT_TOP] === undefined) {
+      if (!this.room.memory.exits) {
+        this.room.memory.exits = {} as Map<ExitConstant, boolean>;
+      }
+      this.room.memory.exits[FIND_EXIT_TOP] = findExit(FIND_EXIT_TOP, this.room);
+      return;
+    }
+    if (this.room.memory.exits[FIND_EXIT_BOTTOM] === undefined) {
+      this.room.memory.exits[FIND_EXIT_BOTTOM] = findExit(FIND_EXIT_BOTTOM, this.room);
+      return;
+    }
+    if (this.room.memory.exits[FIND_EXIT_LEFT] === undefined) {
+      this.room.memory.exits[FIND_EXIT_LEFT] = findExit(FIND_EXIT_LEFT, this.room);
+      return;
+    }
+    if (this.room.memory.exits[FIND_EXIT_RIGHT] === undefined) {
+      this.room.memory.exits[FIND_EXIT_RIGHT] = findExit(FIND_EXIT_RIGHT, this.room);
       return;
     }
     if (this.populateContainerMemory(this.room)) {
@@ -138,4 +157,44 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
   getNextCreepToSpawn(): CreepSpawnData | null {
     return null;
   }
+}
+
+function findExit(exit: ExitConstant, room: Room): boolean {
+  let exitExists = false;
+  let x = -1;
+  let y = -1;
+  let isX = false;
+  for (let dynamicCoord = 2; dynamicCoord < 49; dynamicCoord++) {
+    if (exit === FIND_EXIT_TOP) {
+      y = 2;
+      x = dynamicCoord;
+      isX = true;
+    } else if (exit === FIND_EXIT_BOTTOM) {
+      y = 47;
+      x = dynamicCoord;
+      isX = true;
+    } else if (exit === FIND_EXIT_RIGHT) {
+      x = 47;
+      y = dynamicCoord;
+    } else if (exit === FIND_EXIT_LEFT) {
+      x = 2;
+      y = dynamicCoord;
+    }
+    let spotHasNoWall = false;
+    if (isX) {
+      const newY = y === 2 ? 0 : 49;
+      spotHasNoWall =
+        _.filter(room.lookAt(x, newY), (c: LookAtResultWithPos) => {
+          return c.type === "terrain" && c.terrain === "wall";
+        }).length < 1;
+    } else {
+      const newX = x === 2 ? 0 : 49;
+      spotHasNoWall =
+        _.filter(room.lookAt(newX, y), (c: LookAtResultWithPos) => {
+          return c.type === "terrain" && c.terrain === "wall";
+        }).length < 1;
+    }
+    exitExists = exitExists || spotHasNoWall;
+  }
+  return exitExists;
 }
