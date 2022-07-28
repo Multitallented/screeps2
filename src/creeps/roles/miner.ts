@@ -3,31 +3,35 @@ import { MineEnergyAction } from "../actions/mine-energy";
 import { TransferAction } from "../actions/transfer";
 import { WaitAction } from "../actions/wait";
 import { WithdrawAction } from "../actions/withdraw";
+import _ from "lodash";
 
 export class Miner {
   static KEY: CreepRoleEnum = CreepRoleEnum.MINER;
   public static setAction(creep: Creep): void {
-    let nearestContainer: StructureContainer | null = null;
+    let nearestContainer: Structure | null = null;
     let sources: Array<Source>;
+    let closestDistance = 99999;
     switch (creep.memory.action) {
       case WithdrawAction.KEY:
       case MineEnergyAction.KEY:
-        nearestContainer = <StructureContainer>creep.pos.findClosestByRange(FIND_STRUCTURES, {
-          filter: (s: StructureLink) => {
-            return s.structureType === STRUCTURE_LINK && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+        _.forEach(creep.room.find(FIND_STRUCTURES), (s: Structure) => {
+          if (s.structureType === STRUCTURE_LINK && (<StructureLink>s).store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+            const distance = Math.max(1, creep.pos.getRangeTo(s.pos));
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              nearestContainer = s;
+            }
+          } else if (
+            (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
+            (<StructureContainer>s).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+          ) {
+            const distance = Math.max(1, creep.pos.getRangeTo(s.pos));
+            if (distance * 2 < closestDistance) {
+              closestDistance = distance * 2;
+              nearestContainer = s;
+            }
           }
         });
-        if (!nearestContainer) {
-          nearestContainer = <StructureContainer>creep.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: (s: StructureContainer) => {
-              return (
-                (s.structureType === STRUCTURE_CONTAINER ||
-                  s.structureType === STRUCTURE_STORAGE) &&
-                s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-              );
-            }
-          });
-        }
         if (nearestContainer) {
           TransferAction.setAction(creep, nearestContainer, RESOURCE_ENERGY);
         } else {

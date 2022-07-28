@@ -125,20 +125,25 @@ const goGetEnergy = function (this: Creep, hasWorkComponent: boolean, findHighes
       }
     }
   } else {
-    closestContainer = this.pos.findClosestByRange(FIND_STRUCTURES, {
-      filter: (s: StructureLink) => {
-        return s.structureType === STRUCTURE_LINK && s.store.energy > 0;
+    let closestDistance = 99999;
+    _.forEach(this.room.find(FIND_STRUCTURES), (s: Structure) => {
+      if (s.structureType === STRUCTURE_LINK && (<StructureLink>s).store.energy > 0) {
+        const distance = Math.max(1, this.pos.getRangeTo(s.pos));
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestContainer = s;
+        }
+      } else if (
+        (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
+        (<StructureContainer>s).store.energy > 0
+      ) {
+        const distance = Math.max(1, this.pos.getRangeTo(s.pos));
+        if (distance * 2 < closestDistance) {
+          closestDistance = distance * 2;
+          closestContainer = s;
+        }
       }
     });
-    if (!closestContainer) {
-      closestContainer = this.pos.findClosestByRange(FIND_STRUCTURES, {
-        filter: (s: StructureContainer) => {
-          return (
-            (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) && s.store.energy > 0
-          );
-        }
-      });
-    }
   }
   if (closestContainer != null) {
     WithdrawAction.setAction(this, closestContainer, RESOURCE_ENERGY);
