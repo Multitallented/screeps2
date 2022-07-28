@@ -17,6 +17,7 @@ export class RoomController {
       room.getPlanner(room).buildMemory();
       room.makeConstructionSites();
       LinkController.run(room);
+      delete room.memory.travelerRoom;
     });
   }
 }

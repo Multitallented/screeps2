@@ -90,6 +90,7 @@ declare global {
     exits?: Map<ExitConstant, boolean>;
     center?: RoomPosition;
     creepCount?: Map<CreepRoleEnum, number>;
+    travelerRoom?: string;
   }
 
   // Syntax for adding proprties to `global` (ex "global.log")

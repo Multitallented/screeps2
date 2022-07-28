@@ -108,6 +108,13 @@ export class GrandStrategyPlanner {
     if (!currentRoom) {
       return null;
     }
+    if (currentRoom.memory.travelerRoom) {
+      helpRoom = currentRoom.memory.travelerRoom;
+      if (creep) {
+        delete currentRoom.memory.travelerRoom;
+      }
+      return helpRoom;
+    }
     _.forEach(Memory.roomData, (roomData: GlobalRoomMemory, key) => {
       if (!key) {
         return;
@@ -173,7 +180,11 @@ export class GrandStrategyPlanner {
         }
       }
     });
+    if (helpRoom && !creep) {
+      currentRoom.memory.travelerRoom = helpRoom;
+    }
     if (helpRoom !== null && creep) {
+      delete currentRoom.memory.travelerRoom;
       console.log("sending traveler " + creep.id + " to " + <string>(<unknown>helpRoom) + " from " + roomName);
       creep.memory.travel = helpRoom;
       (Memory.roomData[helpRoom] as GlobalRoomMemory).travelers.push(creep.id);

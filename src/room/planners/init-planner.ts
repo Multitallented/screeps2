@@ -68,8 +68,12 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     if (((upgraders / 2 > builders && constructionSites > 0) || builders < 1) && upgraders > 1) {
       return { newRole: CreepRoleEnum.BUILDER, oldRole: CreepRoleEnum.UPGRADER, type: "single" };
     }
-    if (upgraders > 4 && GrandStrategyPlanner.findTravelerDestinationRoom(this.room.name, null)) {
+    const travelerRoom = GrandStrategyPlanner.findTravelerDestinationRoom(this.room.name, null);
+    if (upgraders > 4 && travelerRoom) {
       return { newRole: CreepRoleEnum.TRAVELER, oldRole: CreepRoleEnum.UPGRADER, type: "single" };
+    }
+    if (((upgraders / 2 <= builders && constructionSites > 0) || builders > 1) && travelerRoom) {
+      return { newRole: CreepRoleEnum.TRAVELER, oldRole: CreepRoleEnum.BUILDER, type: "single" };
     }
     if (force) {
       if (constructionSites > 0) {
