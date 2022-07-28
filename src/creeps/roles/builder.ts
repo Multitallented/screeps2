@@ -107,7 +107,8 @@ export class Builder {
         if (repairThese2.length > 0) {
           RepairAction.setAction(creep, repairThese2[0]);
         } else {
-          creep.room.reassignIdleCreep(creep);
+          const percentEnergyAvailable = creep.room.energyAvailable / creep.room.energyCapacityAvailable;
+          creep.room.reassignIdleCreep(creep, percentEnergyAvailable > 0.6);
           return;
         }
       }

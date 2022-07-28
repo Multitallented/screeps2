@@ -46,7 +46,7 @@ export class TowerController {
           sources = tower.room.find(FIND_SOURCES_ACTIVE).length;
         }
         const controllerLevel = tower.room.controller ? tower.room.controller.level : 0;
-        const repairMinUpgraders = controllerLevel > 7 ? 0 : sources;
+        const repairMinUpgraders = controllerLevel > 7 ? 0 : 1;
         if (
           tower.store.getUsedCapacity(RESOURCE_ENERGY) > 750 &&
           controllerLevel > 2 &&

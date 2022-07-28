@@ -124,6 +124,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     const upgraders = this.room.getNumberOfCreepsByRole(CreepRoleEnum.UPGRADER);
     const miners = this.room.getNumberOfCreepsByRole(CreepRoleEnum.MINER);
     const controllerLevel = this.room.controller ? this.room.controller.level : 0;
+    const percentEnergyAvailable = this.room.energyAvailable / this.room.energyCapacityAvailable;
     // const spawns = this.room.find(FIND_MY_SPAWNS).length;
     const minerNearDeath =
       this.room.find(FIND_MY_CREEPS, {
@@ -167,19 +168,15 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     const constructionSites = this.room.find(FIND_CONSTRUCTION_SITES).length;
 
     if (transports < 1) {
+      const energy = controllerLevel < 4 ? Math.min(this.room.energyAvailable, 350) : this.room.energyAvailable;
       return CreepSpawnData.build(
         CreepRoleEnum.TRANSPORT,
-        hasContainers
-          ? CreepBodyBuilder.buildTransport(Math.min(this.room.energyAvailable, 350))
-          : CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 350)),
+        hasContainers ? CreepBodyBuilder.buildTransport(energy) : CreepBodyBuilder.buildBasicWorker(energy),
         0
       );
     } else if (upgraders < 1) {
-      return CreepSpawnData.build(
-        CreepRoleEnum.UPGRADER,
-        CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 600)),
-        0
-      );
+      const energy = controllerLevel < 4 ? Math.min(this.room.energyAvailable, 600) : this.room.energyAvailable;
+      return CreepSpawnData.build(CreepRoleEnum.UPGRADER, CreepBodyBuilder.buildBasicWorker(energy), 0);
     } else if (miners < 1 && hasContainers) {
       return CreepSpawnData.build(
         CreepRoleEnum.MINER,
@@ -194,11 +191,10 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       );
     } else if (
       hasContainers &&
-      ((controllerLevel > 3 && transports < 2) ||
-        (controllerLevel < 4 &&
-          (transports < 3 ||
-            (transports < builders + upgraders / 2 && transports < 2 * sources) ||
-            (constructionSites < 1 && transports < 2 * sources + 1))))
+      controllerLevel < 4 &&
+      (transports < 3 ||
+        (transports < builders + upgraders / 2 && transports < 2 * sources) ||
+        (constructionSites < 1 && transports < 2 * sources + 1))
     ) {
       return CreepSpawnData.build(
         CreepRoleEnum.TRANSPORT,
@@ -212,8 +208,9 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
         0.4
       );
     } else if (
-      (upgraders + 1 < Math.max(2, this.room.getTotalNumberOfMiningSpaces()) && upgraders / 2 <= builders) ||
-      (this.room.energyAvailable > 600 && upgraders < 3)
+      controllerLevel < 4 &&
+      upgraders + 1 < Math.max(2, this.room.getTotalNumberOfMiningSpaces()) &&
+      upgraders / 2 <= builders
     ) {
       return CreepSpawnData.build(
         CreepRoleEnum.UPGRADER,
@@ -247,28 +244,19 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
         return CreepSpawnData.build(CreepRoleEnum.CLAIMER, CreepBodyBuilder.buildClaimer(), 0.5);
       }
     }
-    if (
-      travelerRoom &&
-      this.room.energyAvailable > 600 &&
-      upgraders > 2 &&
-      this.room.energyAvailable <= this.room.energyCapacityAvailable * 0.7
-    ) {
+    if (travelerRoom && this.room.energyAvailable > 600 && upgraders > 2 && percentEnergyAvailable <= 0.7) {
       return CreepSpawnData.build(
         CreepRoleEnum.TRAVELER,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 450)),
         1
       );
-    } else if (
-      travelerRoom &&
-      this.room.energyAvailable > this.room.energyCapacityAvailable * 0.7 &&
-      this.room.energyAvailable > 600
-    ) {
+    } else if (travelerRoom && percentEnergyAvailable > 0.7 && this.room.energyAvailable > 600) {
       return CreepSpawnData.build(
         CreepRoleEnum.TRAVELER,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 1000)),
         1
       );
-    } else if (this.room.energyAvailable > this.room.energyCapacityAvailable * 0.9 && upgraders < 4) {
+    } else if (percentEnergyAvailable > 0.9 && upgraders < 4 && controllerLevel < 4) {
       return CreepSpawnData.build(
         CreepRoleEnum.UPGRADER,
         CreepBodyBuilder.buildBasicWorker(this.room.energyAvailable),
