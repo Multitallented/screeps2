@@ -34,7 +34,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     //     }});
     const constructionSites = this.room.find(FIND_CONSTRUCTION_SITES).length;
     const spawns = this.room.find(FIND_MY_SPAWNS).length;
-    if (spawns < 1) {
+    if (spawns < 1 || builders + upgraders + miners < 1) {
       this.room.memory.sendBuilders = true;
     } else {
       delete this.room.memory.sendBuilders;
@@ -52,10 +52,10 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     } else if (spawns < 1 && travelers > 0 && upgraders < 3) {
       return { newRole: CreepRoleEnum.UPGRADER, oldRole: CreepRoleEnum.TRAVELER, type: "single" };
     }
-    if (spawns > 0 && transports < 1 && builders > 0) {
+    if (spawns > 0 && transports < 1 && builders > 0 && (!this.room.controller || this.room.controller.level < 4)) {
       return { newRole: CreepRoleEnum.TRANSPORT, oldRole: CreepRoleEnum.BUILDER, type: "single" };
     }
-    if (spawns > 0 && transports < 1 && upgraders > 0) {
+    if (spawns > 0 && transports < 1 && upgraders > 0 && (!this.room.controller || this.room.controller.level < 4)) {
       return { newRole: CreepRoleEnum.TRANSPORT, oldRole: CreepRoleEnum.UPGRADER, type: "single" };
     }
     if (upgraders < 1 && builders > 0) {

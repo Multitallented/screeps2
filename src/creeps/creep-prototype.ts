@@ -56,6 +56,7 @@ const moveToTarget = function (this: Creep) {
 
 const goGetEnergy = function (this: Creep, hasWorkComponent: boolean, findHighest: boolean) {
   let closestContainer: Structure[] | Structure | null = null;
+  const roomPercentFilled = this.room.energyAvailable / this.room.energyCapacityAvailable;
   if (findHighest) {
     if (this.room.memory && !this.room.memory.ccontainer && this.room.controller) {
       let closestControllerContainer: StructureContainer | null = null;
@@ -85,9 +86,14 @@ const goGetEnergy = function (this: Creep, hasWorkComponent: boolean, findHighes
       this.room.find(FIND_STRUCTURES, {
         filter: (s: Structure) => {
           return (
-            (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
-            (s as StructureContainer).store.energy > 0 &&
-            (!this.room.memory.ccontainer || s.id !== this.room.memory.ccontainer)
+            (roomPercentFilled < 0.98 &&
+              (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
+              (s as StructureContainer).store.energy > 0 &&
+              (!this.room.memory.ccontainer || s.id !== this.room.memory.ccontainer)) ||
+            (roomPercentFilled >= 0.98 &&
+              s.structureType === STRUCTURE_CONTAINER &&
+              (s as StructureContainer).store.energy > 0 &&
+              (!this.room.memory.ccontainer || s.id !== this.room.memory.ccontainer))
           );
         }
       }),
@@ -178,7 +184,9 @@ const deliverEnergyToSpawner = function (this: Creep) {
           return (
             (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
             s.store.getFreeCapacity(RESOURCE_ENERGY) > 0 &&
-            (s.room.memory.closestLink == null || s.room.memory.closestLink !== s.id)
+            (s.structureType !== STRUCTURE_CONTAINER ||
+              s.room.memory.ccontainer == null ||
+              s.room.memory.ccontainer === s.id)
           );
         }
       }),

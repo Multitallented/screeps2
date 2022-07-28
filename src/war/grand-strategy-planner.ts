@@ -148,6 +148,7 @@ export class GrandStrategyPlanner {
       }
       GrandStrategyPlanner.cleanupTravelerArray(key);
       const roomDistance = GrandStrategyPlanner.getDistanceBetweenTwoRooms(key, roomName);
+      const controllerLevel = currentRoom.controller ? currentRoom.controller.level : 0;
 
       // If a room I own doesn't have enough creeps, send travelers to help
       if (
@@ -157,6 +158,7 @@ export class GrandStrategyPlanner {
         roomData.travelers.length - 4 < Math.max(2, numberOfSpots) &&
         room.controller &&
         room.controller.my &&
+        (room.controller.level < 4 || room.memory.sendBuilders) &&
         !room.controller.reservation
       ) {
         helpRoom = room.name;
@@ -171,7 +173,7 @@ export class GrandStrategyPlanner {
           room.controller.reservation &&
           room.controller.reservation.username === Memory.username) ||
         roomData.status === "mine";
-      if (miningRoom && currentRoom.controller && currentRoom.controller.level > 3) {
+      if (miningRoom && controllerLevel > 3) {
         return;
       }
       if (miningRoom) {
