@@ -46,12 +46,11 @@ export class TowerController {
           sources = tower.room.find(FIND_SOURCES_ACTIVE).length;
         }
         const controllerLevel = tower.room.controller ? tower.room.controller.level : 0;
-        const repairMinUpgraders = controllerLevel > 7 ? 0 : 1;
         if (
           tower.store.getUsedCapacity(RESOURCE_ENERGY) > 750 &&
           controllerLevel > 2 &&
-          tower.room.getNumberOfCreepsByRole(CreepRoleEnum.UPGRADER) > repairMinUpgraders &&
-          tower.room.getNumberOfCreepsByRole(CreepRoleEnum.TRANSPORT) > 1 &&
+          tower.room.getNumberOfCreepsByRole(CreepRoleEnum.UPGRADER) > 0 &&
+          tower.room.getNumberOfCreepsByRole(CreepRoleEnum.TRANSPORT) > 0 &&
           tower.room.energyAvailable > 0.6 * tower.room.energyCapacityAvailable &&
           tower.room.getNumberOfCreepsByRole(CreepRoleEnum.MINER) >= sources
         ) {

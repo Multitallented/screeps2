@@ -217,7 +217,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 900)),
         1
       );
-    } else if (builders < 3 * sources && constructionSites > 0) {
+    } else if (constructionSites > 0 && ((builders < 3 * sources && controllerLevel < 4) || builders < 3)) {
       return CreepSpawnData.build(
         CreepRoleEnum.BUILDER,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 900)),
@@ -267,6 +267,12 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
   }
 
   public buildMemory() {
+    if (this.room.memory.ccontainer && !Game.getObjectById(<Id<_HasId>>this.room.memory.ccontainer)) {
+      delete this.room.memory.ccontainer;
+    }
+    if (this.room.memory.closestLink && !Game.getObjectById(<Id<_HasId>>this.room.memory.closestLink)) {
+      delete this.room.memory.closestLink;
+    }
     if (this.room.memory.complete) {
       return;
     }

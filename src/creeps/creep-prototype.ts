@@ -126,15 +126,19 @@ const goGetEnergy = function (this: Creep, hasWorkComponent: boolean, findHighes
     }
   } else {
     closestContainer = this.pos.findClosestByRange(FIND_STRUCTURES, {
-      filter: (s: StructureContainer) => {
-        return (
-          (s.structureType === STRUCTURE_CONTAINER ||
-            s.structureType === STRUCTURE_STORAGE ||
-            s.structureType === STRUCTURE_LINK) &&
-          s.store.energy > 0
-        );
+      filter: (s: StructureLink) => {
+        return s.structureType === STRUCTURE_LINK && s.store.energy > 0;
       }
     });
+    if (!closestContainer) {
+      closestContainer = this.pos.findClosestByRange(FIND_STRUCTURES, {
+        filter: (s: StructureContainer) => {
+          return (
+            (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) && s.store.energy > 0
+          );
+        }
+      });
+    }
   }
   if (closestContainer != null) {
     WithdrawAction.setAction(this, closestContainer, RESOURCE_ENERGY);

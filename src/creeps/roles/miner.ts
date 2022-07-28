@@ -13,15 +13,21 @@ export class Miner {
       case WithdrawAction.KEY:
       case MineEnergyAction.KEY:
         nearestContainer = <StructureContainer>creep.pos.findClosestByRange(FIND_STRUCTURES, {
-          filter: (s: StructureContainer) => {
-            return (
-              (s.structureType === STRUCTURE_CONTAINER ||
-                s.structureType === STRUCTURE_STORAGE ||
-                s.structureType === STRUCTURE_LINK) &&
-              s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-            );
+          filter: (s: StructureLink) => {
+            return s.structureType === STRUCTURE_LINK && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
           }
         });
+        if (!nearestContainer) {
+          nearestContainer = <StructureContainer>creep.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: (s: StructureContainer) => {
+              return (
+                (s.structureType === STRUCTURE_CONTAINER ||
+                  s.structureType === STRUCTURE_STORAGE) &&
+                s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+              );
+            }
+          });
+        }
         if (nearestContainer) {
           TransferAction.setAction(creep, nearestContainer, RESOURCE_ENERGY);
         } else {
