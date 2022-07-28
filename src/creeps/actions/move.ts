@@ -32,12 +32,16 @@ export class MoveAction {
     delete creep.memory.target;
     creep.memory.destination = pos;
     creep.memory.action = MoveAction.KEY;
-    creep.say("→ move");
+    if (Memory.debug) {
+      creep.say("→ move");
+    }
   }
   public static setActionTarget(creep: Creep, thing: Structure | Creep): void {
     delete creep.memory.destination;
     creep.memory.target = thing.id;
     creep.memory.action = MoveAction.KEY;
-    creep.say("→ move");
+    if (Memory.debug) {
+      creep.say("→ move");
+    }
   }
 }

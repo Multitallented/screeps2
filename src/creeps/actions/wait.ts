@@ -19,18 +19,24 @@ export class WaitAction {
   public static setActionUntilReserved(creep: Creep): void {
     creep.memory.action = "wait";
     creep.memory.wait = WaitAction.RESERVED;
-    creep.say("🕙 reserved");
+    if (Memory.debug) {
+      creep.say("🕙 reserved");
+    }
   }
 
   public static setActionUntilNextTick(creep: Creep): void {
     creep.memory.action = "wait";
     creep.memory.wait = WaitAction.WAITING;
-    creep.say("🕙 idle");
+    if (Memory.debug) {
+      creep.say("🕙 idle");
+    }
   }
 
   public static setActionPermenantly(creep: Creep): void {
     delete creep.memory.wait;
     creep.memory.action = "wait";
-    creep.say("Zz sleep");
+    if (Memory.debug) {
+      creep.say("Zz sleep");
+    }
   }
 }

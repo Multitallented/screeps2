@@ -22,6 +22,8 @@ export class BuildAction {
   public static setAction(creep: Creep, target: ConstructionSite): void {
     creep.memory.target = target.id;
     creep.memory.action = this.KEY;
-    creep.say("✍ build");
+    if (Memory.debug) {
+      creep.say("✍ build");
+    }
   }
 }

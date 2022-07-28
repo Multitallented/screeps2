@@ -75,7 +75,9 @@ export class LeaveRoomAction {
         }
       }
       creep.memory.action = "traveling";
-      creep.say("✈ traveling");
+      if (Memory.debug) {
+        creep.say("✈ traveling");
+      }
       creep.runAction();
     } else {
       LeaveRoomAction.moveOutOfRoom(creep);
@@ -105,20 +107,22 @@ export class LeaveRoomAction {
       creep.memory.endRoom = creep.memory.toRoom;
       creep.memory.originRoom = creep.room.name;
       creep.memory.action = this.KEY;
-      switch (direction) {
-        case FIND_EXIT_BOTTOM:
-          creep.say("☟ bye");
-          break;
-        case FIND_EXIT_TOP:
-          creep.say("☝ bye");
-          break;
-        case FIND_EXIT_LEFT:
-          creep.say("☜ bye");
-          break;
-        case FIND_EXIT_RIGHT:
-        default:
-          creep.say("☞ bye");
-          break;
+      if (Memory.debug) {
+        switch (direction) {
+          case FIND_EXIT_BOTTOM:
+            creep.say("☟ bye");
+            break;
+          case FIND_EXIT_TOP:
+            creep.say("☝ bye");
+            break;
+          case FIND_EXIT_LEFT:
+            creep.say("☜ bye");
+            break;
+          case FIND_EXIT_RIGHT:
+          default:
+            creep.say("☞ bye");
+            break;
+        }
       }
     }
   }

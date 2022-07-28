@@ -22,6 +22,8 @@ export class PickupAction {
   public static setAction(creep: Creep, resource: Resource): void {
     creep.memory.target = resource.id;
     creep.memory.action = this.KEY;
-    creep.say("⚡ pickup");
+    if (Memory.debug) {
+      creep.say("⚡ pickup");
+    }
   }
 }

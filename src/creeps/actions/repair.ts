@@ -23,6 +23,8 @@ export class RepairAction {
   public static setAction(creep: Creep, target: Structure): void {
     creep.memory.target = target.id;
     creep.memory.action = this.KEY;
-    creep.say("✍ repair");
+    if (Memory.debug) {
+      creep.say("✍ repair");
+    }
   }
 }

@@ -32,6 +32,8 @@ export class UpgradeControllerAction {
 
   public static setAction(creep: Creep): void {
     creep.memory.action = this.KEY;
-    creep.say("⚡ upgrade");
+    if (Memory.debug) {
+      creep.say("⚡ upgrade");
+    }
   }
 }

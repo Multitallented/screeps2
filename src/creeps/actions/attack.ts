@@ -24,6 +24,8 @@ export class AttackAction {
   public static setAction(creep: Creep, invader: Creep | Structure | PowerCreep): void {
     creep.memory.target = invader.id;
     creep.memory.action = AttackAction.KEY;
-    creep.say("✘ attack");
+    if (Memory.debug) {
+      creep.say("✘ attack");
+    }
   }
 }

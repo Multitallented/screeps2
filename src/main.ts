@@ -1,8 +1,9 @@
 import { CreepController } from "./creeps/creep-controller";
+import { CreepRoleEnum } from "./creeps/roles/creep-role-enum";
 import { ErrorMapper } from "utils/ErrorMapper";
 import { RoomController } from "./room/room-controller";
 import { RoomPrototype } from "./room/room-prototype";
-import { CreepRoleEnum } from "./creeps/roles/creep-role-enum";
+import * as profiler from "./screeps-profiler";
 
 declare global {
   /*
@@ -19,6 +20,7 @@ declare global {
     log: any;
     roomData: Map<string, GlobalRoomMemory>;
     username?: string;
+    debug?: boolean;
   }
 
   interface GlobalRoomMemory {
@@ -101,15 +103,18 @@ declare global {
   }
 }
 
+profiler.enable();
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
-  RoomPrototype.init();
-  for (const name in Memory.creeps) {
-    if (!Game.creeps[name]) {
-      delete Memory.creeps[name];
+  profiler.wrap(() => {
+    RoomPrototype.init();
+    for (const name in Memory.creeps) {
+      if (!Game.creeps[name]) {
+        delete Memory.creeps[name];
+      }
     }
-  }
-  new CreepController();
-  RoomController.runRooms();
+    new CreepController();
+    RoomController.runRooms();
+  });
 });

@@ -22,6 +22,8 @@ export class ReserveControllerAction {
 
   public static setAction(creep: Creep): void {
     creep.memory.action = this.KEY;
-    creep.say("® reserve");
+    if (Memory.debug) {
+      creep.say("® reserve");
+    }
   }
 }

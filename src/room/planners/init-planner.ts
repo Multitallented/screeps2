@@ -235,7 +235,12 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
         return CreepSpawnData.build(CreepRoleEnum.CLAIMER, CreepBodyBuilder.buildClaimer(), 0.5);
       }
     }
-    if (travelerRoom && this.room.energyAvailable > 600 && upgraders > 2) {
+    if (
+      travelerRoom &&
+      this.room.energyAvailable > 600 &&
+      upgraders > 2 &&
+      this.room.energyAvailable <= this.room.energyCapacityAvailable * 0.7
+    ) {
       return CreepSpawnData.build(
         Traveler.KEY,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 450)),
@@ -243,12 +248,12 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       );
     } else if (
       travelerRoom &&
-      this.room.energyAvailable > this.room.energyCapacityAvailable * 0.9 &&
+      this.room.energyAvailable > this.room.energyCapacityAvailable * 0.7 &&
       this.room.energyAvailable > 600
     ) {
       return CreepSpawnData.build(
         Traveler.KEY,
-        CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 600)),
+        CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 1000)),
         1
       );
     } else if (this.room.energyAvailable > this.room.energyCapacityAvailable * 0.9 && upgraders < 4) {

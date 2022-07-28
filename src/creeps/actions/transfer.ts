@@ -59,6 +59,8 @@ export class TransferAction {
     creep.memory.action = this.KEY;
     creep.memory.target = target.id;
     creep.memory.resourceType = resourceType;
-    creep.say("⚡ give");
+    if (Memory.debug) {
+      creep.say("⚡ give");
+    }
   }
 }

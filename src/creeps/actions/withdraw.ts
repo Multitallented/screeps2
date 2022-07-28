@@ -44,6 +44,8 @@ export class WithdrawAction {
     creep.memory.action = this.KEY;
     creep.memory.target = target.id;
     creep.memory.resourceType = resourceType;
-    creep.say("⚡ take");
+    if (Memory.debug) {
+      creep.say("⚡ take");
+    }
   }
 }

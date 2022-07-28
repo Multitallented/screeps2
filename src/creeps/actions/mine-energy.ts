@@ -58,8 +58,9 @@ export class MineEnergyAction {
   public static setActionWithTarget(creep: Creep, target: Source): void {
     creep.memory.action = this.KEY;
     creep.memory.target = target.id;
-    creep.say("⚡ mine");
-    // creep.say('🔄 harvest');
+    if (Memory.debug) {
+      creep.say("⚡ mine");
+    }
   }
 
   public static setAction(creep: Creep): void {
@@ -69,7 +70,8 @@ export class MineEnergyAction {
     if (source) {
       creep.memory.target = source.id;
     }
-    creep.say("⚡ mine");
-    // creep.say('🔄 harvest');
+    if (Memory.debug) {
+      creep.say("⚡ mine");
+    }
   }
 }

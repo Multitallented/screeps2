@@ -75,6 +75,8 @@ export class TravelingAction {
       creep.moveToTarget();
     }
     creep.memory.action = TravelingAction.KEY;
-    creep.say("✈ traveling");
+    if (Memory.debug) {
+      creep.say("✈ traveling");
+    }
   }
 }
