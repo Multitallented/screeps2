@@ -32,11 +32,11 @@ export class Miner {
       default:
         sources = creep.room.find(FIND_SOURCES_ACTIVE);
         for (const source of sources) {
-          const range = creep.pos.getRangeTo(source.pos);
           const reassignMiners = new Array<Creep>();
           const otherMinersOnSource = creep.room.find(FIND_MY_CREEPS, {
             filter: (c: Creep) => {
               if (c.memory && c.memory.role === Miner.KEY && c.memory.target === source.id) {
+                const range = creep.pos.getRangeTo(source.pos);
                 if (c !== creep && c.pos.getRangeTo(source.pos) > range) {
                   reassignMiners.push(c);
                   return false;

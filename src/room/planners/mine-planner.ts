@@ -18,11 +18,6 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
   }
 
   buildMemory() {
-    if (this.room.find(FIND_MY_CONSTRUCTION_SITES).length > 0) {
-      this.room.memory.sendBuilders = true;
-    } else {
-      delete this.room.memory.sendBuilders;
-    }
     if (this.room.memory.complete) {
       return;
     }
@@ -44,34 +39,34 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
     if (this.populateSourcesMemory(this.room)) {
       return;
     }
-    if (!this.room.memory.exits || this.room.memory.exits[FIND_EXIT_TOP] === undefined) {
-      if (!this.room.memory.exits) {
-        this.room.memory.exits = {} as Map<ExitConstant, boolean>;
-      }
-      this.room.memory.exits[FIND_EXIT_TOP] = findExit(FIND_EXIT_TOP, this.room);
-      return;
-    }
-    if (this.room.memory.exits[FIND_EXIT_BOTTOM] === undefined) {
-      this.room.memory.exits[FIND_EXIT_BOTTOM] = findExit(FIND_EXIT_BOTTOM, this.room);
-      return;
-    }
-    if (this.room.memory.exits[FIND_EXIT_LEFT] === undefined) {
-      this.room.memory.exits[FIND_EXIT_LEFT] = findExit(FIND_EXIT_LEFT, this.room);
-      return;
-    }
-    if (this.room.memory.exits[FIND_EXIT_RIGHT] === undefined) {
-      this.room.memory.exits[FIND_EXIT_RIGHT] = findExit(FIND_EXIT_RIGHT, this.room);
-      return;
-    }
+    // if (!this.room.memory.exits || this.room.memory.exits[FIND_EXIT_TOP] === undefined) {
+    //   if (!this.room.memory.exits) {
+    //     this.room.memory.exits = {} as Map<ExitConstant, boolean>;
+    //   }
+    //   this.room.memory.exits[FIND_EXIT_TOP] = findExit(FIND_EXIT_TOP, this.room);
+    //   return;
+    // }
+    // if (this.room.memory.exits[FIND_EXIT_BOTTOM] === undefined) {
+    //   this.room.memory.exits[FIND_EXIT_BOTTOM] = findExit(FIND_EXIT_BOTTOM, this.room);
+    //   return;
+    // }
+    // if (this.room.memory.exits[FIND_EXIT_LEFT] === undefined) {
+    //   this.room.memory.exits[FIND_EXIT_LEFT] = findExit(FIND_EXIT_LEFT, this.room);
+    //   return;
+    // }
+    // if (this.room.memory.exits[FIND_EXIT_RIGHT] === undefined) {
+    //   this.room.memory.exits[FIND_EXIT_RIGHT] = findExit(FIND_EXIT_RIGHT, this.room);
+    //   return;
+    // }
     if (this.populateContainerMemory(this.room)) {
       return;
     }
-    if (this.planSourceRoads(this.room)) {
-      return;
-    }
-    if (this.planExitRoads(this.room)) {
-      return;
-    }
+    // if (this.planSourceRoads(this.room)) {
+    //   return;
+    // }
+    // if (this.planExitRoads(this.room)) {
+    //   return;
+    // }
   }
 
   getNextReassignRole(force?: boolean): ReassignRole | null {

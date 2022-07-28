@@ -1,17 +1,11 @@
 import * as _ from "lodash";
-import { Builder } from "../../creeps/roles/builder";
-import { Claimer } from "../../creeps/roles/claimer";
 import { ConstructionSiteData } from "../../structures/construction/construction-site-data";
 import { CreepBodyBuilder } from "../../creeps/creep-body-builder";
 import { CreepRoleEnum } from "../../creeps/roles/creep-role-enum";
 import { CreepSpawnData } from "../../creeps/creep-spawn-data";
 import { GrandStrategyPlanner } from "../../war/grand-strategy-planner";
-import { Miner } from "../../creeps/roles/miner";
 import { Planner } from "./planner";
 import { RoomPlannerInterface } from "./room-planner-interface";
-import { Transport } from "../../creeps/roles/transport";
-import { Traveler } from "../../creeps/roles/traveler";
-import { Upgrader } from "../../creeps/roles/upgrader";
 
 export class InitPlanner extends Planner implements RoomPlannerInterface {
   private readonly room: Room;
@@ -23,11 +17,11 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
   }
 
   public getNextReassignRole(force?: boolean) {
-    const travelers = this.room.getNumberOfCreepsByRole(Traveler.KEY);
-    const transports = this.room.getNumberOfCreepsByRole(Transport.KEY);
-    const builders = this.room.getNumberOfCreepsByRole(Builder.KEY);
-    const upgraders = this.room.getNumberOfCreepsByRole(Upgrader.KEY);
-    const miners = this.room.getNumberOfCreepsByRole(Miner.KEY);
+    const travelers = this.room.getNumberOfCreepsByRole(CreepRoleEnum.TRAVELER);
+    const transports = this.room.getNumberOfCreepsByRole(CreepRoleEnum.TRANSPORT);
+    const builders = this.room.getNumberOfCreepsByRole(CreepRoleEnum.BUILDER);
+    const upgraders = this.room.getNumberOfCreepsByRole(CreepRoleEnum.UPGRADER);
+    const miners = this.room.getNumberOfCreepsByRole(CreepRoleEnum.MINER);
     const hasContainers: boolean =
       this.room.find(FIND_STRUCTURES, {
         filter: (s: Structure) => {
@@ -40,6 +34,11 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     //     }});
     const constructionSites = this.room.find(FIND_CONSTRUCTION_SITES).length;
     const spawns = this.room.find(FIND_MY_SPAWNS).length;
+    if (spawns < 1) {
+      this.room.memory.sendBuilders = true;
+    } else {
+      delete this.room.memory.sendBuilders;
+    }
     if (spawns < 1 && upgraders < 1 && travelers > 0) {
       return { newRole: CreepRoleEnum.UPGRADER, oldRole: CreepRoleEnum.TRAVELER, type: "single" };
     } else if (spawns < 1 && upgraders < 1 && builders > 0) {
@@ -65,7 +64,11 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     if (spawns > 0 && builders > transports && transports < 2) {
       return { newRole: CreepRoleEnum.TRANSPORT, oldRole: CreepRoleEnum.BUILDER, type: "single" };
     }
-    if (((upgraders / 2 > builders && constructionSites > 0) || builders < 1) && upgraders > 1) {
+    if (
+      ((upgraders / 2 > builders && constructionSites > 0) ||
+        (builders < 1 && this.room.energyAvailable < 0.6 * this.room.energyCapacityAvailable)) &&
+      upgraders > 1
+    ) {
       return { newRole: CreepRoleEnum.BUILDER, oldRole: CreepRoleEnum.UPGRADER, type: "single" };
     }
     const travelerRoom = GrandStrategyPlanner.findTravelerDestinationRoom(this.room.name, null);
@@ -116,15 +119,18 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
   }
 
   public getNextCreepToSpawn(): CreepSpawnData | null {
-    const transports = this.room.getNumberOfCreepsByRole(Transport.KEY);
-    const builders = this.room.getNumberOfCreepsByRole(Builder.KEY);
-    const upgraders = this.room.getNumberOfCreepsByRole(Upgrader.KEY);
-    const miners = this.room.getNumberOfCreepsByRole(Miner.KEY);
+    const transports = this.room.getNumberOfCreepsByRole(CreepRoleEnum.TRANSPORT);
+    const builders = this.room.getNumberOfCreepsByRole(CreepRoleEnum.BUILDER);
+    const upgraders = this.room.getNumberOfCreepsByRole(CreepRoleEnum.UPGRADER);
+    const miners = this.room.getNumberOfCreepsByRole(CreepRoleEnum.MINER);
+    const controllerLevel = this.room.controller ? this.room.controller.level : 0;
     // const spawns = this.room.find(FIND_MY_SPAWNS).length;
     const minerNearDeath =
       this.room.find(FIND_MY_CREEPS, {
         filter: (creep: Creep) => {
-          return creep.memory && creep.memory.role === Miner.KEY && creep.ticksToLive && creep.ticksToLive < 120;
+          return (
+            creep.memory && creep.memory.role === CreepRoleEnum.MINER && creep.ticksToLive && creep.ticksToLive < 120
+          );
         }
       }).length > 0;
     const hasContainers: boolean =
@@ -162,7 +168,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
 
     if (transports < 1) {
       return CreepSpawnData.build(
-        Transport.KEY,
+        CreepRoleEnum.TRANSPORT,
         hasContainers
           ? CreepBodyBuilder.buildTransport(Math.min(this.room.energyAvailable, 350))
           : CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 350)),
@@ -170,27 +176,33 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       );
     } else if (upgraders < 1) {
       return CreepSpawnData.build(
-        Upgrader.KEY,
+        CreepRoleEnum.UPGRADER,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 600)),
         0
       );
     } else if (miners < 1 && hasContainers) {
-      return CreepSpawnData.build(Miner.KEY, CreepBodyBuilder.buildMiner(Math.min(this.room.energyAvailable, 750)), 0);
+      return CreepSpawnData.build(
+        CreepRoleEnum.MINER,
+        CreepBodyBuilder.buildMiner(Math.min(this.room.energyAvailable, 750)),
+        0
+      );
     } else if (hasContainers && (miners < sources || (minerNearDeath && miners <= sources))) {
       return CreepSpawnData.build(
-        Miner.KEY,
+        CreepRoleEnum.MINER,
         CreepBodyBuilder.buildMiner(Math.min(this.room.energyAvailable, 750)),
         transports > 1 ? 1 : 0.5
       );
     } else if (
       hasContainers &&
-      (transports < 3 ||
-        (transports < builders + upgraders / 2 && transports < 2 * sources) ||
-        (constructionSites < 1 && transports < 2 * sources + 1))
+      ((controllerLevel > 3 && transports < 2) ||
+        (controllerLevel < 4 &&
+          (transports < 3 ||
+            (transports < builders + upgraders / 2 && transports < 2 * sources) ||
+            (constructionSites < 1 && transports < 2 * sources + 1))))
     ) {
       return CreepSpawnData.build(
-        Transport.KEY,
-        CreepBodyBuilder.buildTransport(Math.min(this.room.energyAvailable, 700)),
+        CreepRoleEnum.TRANSPORT,
+        CreepBodyBuilder.buildTransport(this.room.energyAvailable),
         transports > 1 ? 1 : 0.4
       );
     } else if (imminentHostiles) {
@@ -204,19 +216,19 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       (this.room.energyAvailable > 600 && upgraders < 3)
     ) {
       return CreepSpawnData.build(
-        Upgrader.KEY,
+        CreepRoleEnum.UPGRADER,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 900)),
         1
       );
     } else if (builders < 3 * sources && constructionSites > 0) {
       return CreepSpawnData.build(
-        Builder.KEY,
+        CreepRoleEnum.BUILDER,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 900)),
         1
       );
     } else if (GrandStrategyPlanner.canClaimAnyRoom()) {
       // TODO only build 1 for the room
-      return CreepSpawnData.build(Claimer.KEY, CreepBodyBuilder.buildClaimer(), 0.5);
+      return CreepSpawnData.build(CreepRoleEnum.CLAIMER, CreepBodyBuilder.buildClaimer(), 0.5);
     }
     const travelerRoom = GrandStrategyPlanner.findTravelerDestinationRoom(this.room.name, null);
     if (travelerRoom && Game.rooms[travelerRoom]) {
@@ -242,7 +254,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       this.room.energyAvailable <= this.room.energyCapacityAvailable * 0.7
     ) {
       return CreepSpawnData.build(
-        Traveler.KEY,
+        CreepRoleEnum.TRAVELER,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 450)),
         1
       );
@@ -252,7 +264,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       this.room.energyAvailable > 600
     ) {
       return CreepSpawnData.build(
-        Traveler.KEY,
+        CreepRoleEnum.TRAVELER,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 1000)),
         1
       );

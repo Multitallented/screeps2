@@ -156,7 +156,8 @@ export class GrandStrategyPlanner {
         numberOfCreeps < numberOfSpots &&
         roomData.travelers.length - 4 < Math.max(2, numberOfSpots) &&
         room.controller &&
-        room.controller.my
+        room.controller.my &&
+        !room.controller.reservation
       ) {
         helpRoom = room.name;
         return;
@@ -170,6 +171,9 @@ export class GrandStrategyPlanner {
           room.controller.reservation &&
           room.controller.reservation.username === Memory.username) ||
         roomData.status === "mine";
+      if (miningRoom && currentRoom.controller && currentRoom.controller.level > 3) {
+        return;
+      }
       if (miningRoom) {
         const exit = currentRoom.findExitTo(key);
         if (
@@ -190,11 +194,11 @@ export class GrandStrategyPlanner {
         (miningRoom && roomDistance < 2 && roomIsOneRoomAway) ||
         (roomDistance < 3 && room && room.memory.sendBuilders)
       ) {
-        const energyInContainers = this.countEnergyAvailableInContainers(room);
         if (
           !GrandStrategyPlanner.hasHostilesInRoom(key) &&
           (roomData.travelers.length - 4 < Math.max(2, numberOfSpots) ||
-            (energyInContainers > 500 && roomData.travelers.length - 10 < Math.max(2, numberOfSpots)))
+            (this.countEnergyAvailableInContainers(room) > 500 &&
+              roomData.travelers.length - 10 < Math.max(2, numberOfSpots)))
         ) {
           helpRoom = key;
         }
