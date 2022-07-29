@@ -139,12 +139,8 @@ export class GrandStrategyPlanner {
         return;
       }
       let numberOfSpots = 0;
-      let numberOfCreeps = 0;
       if (roomData.sources && roomData.sources.spots) {
         numberOfSpots = roomData.sources.spots;
-      }
-      if (room) {
-        numberOfCreeps = room.find(FIND_MY_CREEPS).length;
       }
       GrandStrategyPlanner.cleanupTravelerArray(key);
       const roomDistance = GrandStrategyPlanner.getDistanceBetweenTwoRooms(key, roomName);
@@ -154,8 +150,7 @@ export class GrandStrategyPlanner {
       if (
         room &&
         roomDistance < 8 &&
-        numberOfCreeps < numberOfSpots &&
-        roomData.travelers.length - 4 < Math.max(2, numberOfSpots) &&
+        roomData.travelers.length - 4 < Math.max(5, numberOfSpots) &&
         room.controller &&
         room.controller.my &&
         (room.controller.level < 4 || room.memory.sendBuilders) &&
@@ -173,7 +168,7 @@ export class GrandStrategyPlanner {
           room.controller.reservation &&
           room.controller.reservation.username === Memory.username) ||
         roomData.status === "mine";
-      if (miningRoom && controllerLevel > 3) {
+      if (miningRoom && controllerLevel > 3 && !currentRoom.memory.sendBuilders) {
         return;
       }
       if (miningRoom) {

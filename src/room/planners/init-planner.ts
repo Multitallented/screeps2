@@ -25,7 +25,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     const hasContainers: boolean =
       this.room.find(FIND_STRUCTURES, {
         filter: (s: Structure) => {
-          return s.structureType === STRUCTURE_CONTAINER;
+          return s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_LINK;
         }
       }).length > 0;
     // const spawnersNeedingEnergy = this.room.find(FIND_MY_STRUCTURES, {filter: (s:Structure) => {
@@ -34,9 +34,9 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     //     }});
     const constructionSites = this.room.find(FIND_CONSTRUCTION_SITES).length;
     const spawns = this.room.find(FIND_MY_SPAWNS).length;
-    if (spawns < 1 || builders + upgraders + miners < 1) {
+    if (spawns < 1 || (builders + upgraders + miners < 2 && this.room.energyAvailable < 300)) {
       this.room.memory.sendBuilders = true;
-    } else {
+    } else if (this.room.energyAvailable / this.room.energyCapacityAvailable > 0.63) {
       delete this.room.memory.sendBuilders;
     }
     if (spawns < 1 && upgraders < 1 && travelers > 0) {
@@ -137,7 +137,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     const hasContainers: boolean =
       this.room.find(FIND_STRUCTURES, {
         filter: (s: Structure) => {
-          return s.structureType === STRUCTURE_CONTAINER;
+          return s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_LINK;
         }
       }).length > 0;
     let sources = 0;
