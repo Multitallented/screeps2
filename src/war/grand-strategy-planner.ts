@@ -131,7 +131,7 @@ export class GrandStrategyPlanner {
   private static findHelpRoom(creep: Creep | null, roomName: string, currentRoom: Room) {
     let helpRoom: string | null = null;
     _.forEach(Memory.roomData, (roomData: GlobalRoomMemory, key) => {
-      if (!key) {
+      if (!key || roomName === key) {
         return;
       }
       const room: Room = Game.rooms[key];

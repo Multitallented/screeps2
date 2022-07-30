@@ -5,7 +5,6 @@ import { MineEnergyAction } from "../actions/mine-energy";
 import { TransferAction } from "../actions/transfer";
 import { TravelingAction } from "../actions/traveling";
 import { WithdrawAction } from "../actions/withdraw";
-import {MoveAction} from "../actions/move";
 
 export class Traveler {
   static KEY: CreepRoleEnum = CreepRoleEnum.TRAVELER;
@@ -20,7 +19,7 @@ export class Traveler {
         }
         if (creep.room.name !== creep.memory.endRoom) {
           if (creep.room.controller && creep.room.controller.my && creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-            creep.deliverEnergyToSpawner();
+            creep.deliverEnergyToSpawner(true);
           } else if (creep.memory.endRoom) {
             TravelingAction.setAction(creep, new RoomPosition(25, 25, creep.memory.endRoom));
           } else {
@@ -31,7 +30,7 @@ export class Traveler {
           // If the creep has reached the endRoom...
           if (creep.room.controller && creep.room.controller.my) {
             if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-              creep.deliverEnergyToSpawner();
+              creep.deliverEnergyToSpawner(true);
             } else {
               creep.memory.homeRoom = creep.room.name;
               const travelRoom = GrandStrategyPlanner.findTravelerDestinationRoom(creep.room.name, creep);
@@ -77,7 +76,7 @@ export class Traveler {
       default:
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
           if (creep.room.controller && creep.room.controller.my) {
-            creep.deliverEnergyToSpawner();
+            creep.deliverEnergyToSpawner(true);
           } else if (creep.memory.homeRoom) {
             TravelingAction.setAction(creep, new RoomPosition(25, 25, creep.memory.homeRoom));
           } else {

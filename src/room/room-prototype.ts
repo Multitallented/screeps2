@@ -11,6 +11,7 @@ import { Traveler } from "../creeps/roles/traveler";
 import { VoidPlanner } from "./planners/void-planner";
 import { WaitAction } from "../creeps/actions/wait";
 import { Util } from "../utils/util";
+import {GrandStrategyPlanner} from "../war/grand-strategy-planner";
 
 const getPlanner = function (room: Room): RoomPlannerInterface {
   return getPlannerByName(room, getPlannerType(room));
@@ -179,27 +180,20 @@ function initCreepCountArray(room: Room): void {
 }
 function reassignCreepAndUpdateTravelerMemory(creep: Creep, newRole: CreepRoleEnum) {
   const oldRole: CreepRoleEnum = creep.memory.role as CreepRoleEnum;
-  if (oldRole === CreepRoleEnum.TRAVELER) {
-    if (
-      !(
-        Memory.roomData[creep.room.name] &&
-        (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers &&
-        (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers.indexOf(creep.id) !== -1
-      )
-    ) {
-      _.forEach(Memory.roomData, (roomData: GlobalRoomMemory) => {
-        if (roomData.travelers && roomData.travelers.indexOf(creep.id) !== -1) {
-          roomData.travelers.splice(roomData.travelers.indexOf(creep.id), 1);
-        }
-      });
-      if (!Memory.roomData[creep.room.name]) {
-        Memory.roomData[creep.room.name] = {} as GlobalRoomMemory;
+  if (newRole === CreepRoleEnum.TRAVELER) {
+    _.forEach(Memory.roomData, (roomData: GlobalRoomMemory) => {
+      if (roomData.travelers && roomData.travelers.indexOf(creep.id) !== -1) {
+        roomData.travelers.splice(roomData.travelers.indexOf(creep.id), 1);
       }
-      if (!(Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers) {
-        (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers = new Array<Id<_HasId>>();
-      }
-      (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers.push(creep.id);
+    });
+  } else {
+    if (!Memory.roomData[creep.room.name]) {
+      Memory.roomData[creep.room.name] = {} as GlobalRoomMemory;
     }
+    if (!(Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers) {
+      (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers = new Array<Id<_HasId>>();
+    }
+    (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers.push(creep.id);
   }
   creep.memory.role = newRole;
   delete creep.memory.action;
@@ -380,6 +374,10 @@ const reassignIdleCreep = function (this: Room, creep: Creep, force?: boolean) {
     return;
   }
   creep.memory.role = newRole;
+  const roomData = <GlobalRoomMemory>Memory.roomData[creep.room.name];
+  if (roomData && roomData.travelers && roomData.travelers.indexOf(creep.id) !== -1) {
+    roomData.travelers.splice(roomData.travelers.indexOf(creep.id), 1);
+  }
   delete creep.memory.action;
   delete creep.memory.target;
   incrementAndDecrement(creep.room, newRole, oldRole);

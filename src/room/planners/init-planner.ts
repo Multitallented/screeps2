@@ -75,7 +75,11 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     if (upgraders > 4 && travelerRoom) {
       return { newRole: CreepRoleEnum.TRAVELER, oldRole: CreepRoleEnum.UPGRADER, type: "single" };
     }
-    if (((upgraders / 2 <= builders && constructionSites > 0) || builders > 1) && travelerRoom) {
+    if (
+      travelerRoom &&
+      ((builders > this.room.find(FIND_SOURCES).length * 3 && constructionSites > 0) ||
+        (builders > 1 && constructionSites < 1))
+    ) {
       return { newRole: CreepRoleEnum.TRAVELER, oldRole: CreepRoleEnum.BUILDER, type: "single" };
     }
     if (force) {

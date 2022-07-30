@@ -54,34 +54,38 @@ const moveToTarget = function (this: Creep) {
   }
 };
 
+function populateCcontainerMemory(creep: Creep) {
+  if (creep.room.memory && !creep.room.memory.ccontainer && creep.room.controller) {
+    let closestControllerContainer: StructureContainer | null = null;
+    let closestDistance = 99;
+    _.forEach(
+      creep.room.find(FIND_STRUCTURES, {
+        filter: (s: Structure) => {
+          return s.structureType === STRUCTURE_CONTAINER;
+        }
+      }),
+      (s: StructureContainer) => {
+        if (!creep.room.controller) {
+          return;
+        }
+        const distance = s.pos.getRangeTo(creep.room.controller.pos);
+        if (!closestControllerContainer || distance < closestDistance) {
+          closestControllerContainer = s;
+          closestDistance = distance;
+        }
+      }
+    );
+    if (closestControllerContainer && closestDistance < 5) {
+      creep.room.memory.ccontainer = (closestControllerContainer as StructureContainer).id;
+    }
+  }
+}
+
 const goGetEnergy = function (this: Creep, hasWorkComponent: boolean, findHighest: boolean) {
   let closestContainer: Structure[] | Structure | null = null;
   const roomPercentFilled = this.room.energyAvailable / this.room.energyCapacityAvailable;
   if (findHighest) {
-    if (this.room.memory && !this.room.memory.ccontainer && this.room.controller) {
-      let closestControllerContainer: StructureContainer | null = null;
-      let closestDistance = 99;
-      _.forEach(
-        this.room.find(FIND_STRUCTURES, {
-          filter: (s: Structure) => {
-            return s.structureType === STRUCTURE_CONTAINER;
-          }
-        }),
-        (s: StructureContainer) => {
-          if (!this.room.controller) {
-            return;
-          }
-          const distance = s.pos.getRangeTo(this.room.controller.pos);
-          if (!closestControllerContainer || distance < closestDistance) {
-            closestControllerContainer = s;
-            closestDistance = distance;
-          }
-        }
-      );
-      if (closestControllerContainer && closestDistance < 5) {
-        this.room.memory.ccontainer = (closestControllerContainer as StructureContainer).id;
-      }
-    }
+    populateCcontainerMemory(this);
     closestContainer = _.sortBy(
       this.room.find(FIND_STRUCTURES, {
         filter: (s: Structure) => {
@@ -166,7 +170,26 @@ const goGetEnergy = function (this: Creep, hasWorkComponent: boolean, findHighes
   }
 };
 
-const deliverEnergyToSpawner = function (this: Creep) {
+const deliverEnergyToSpawner = function (this: Creep, nearest?: boolean) {
+  if (nearest) {
+    const closest = this.pos.findClosestByRange(FIND_STRUCTURES, {
+      filter: (s: Structure) => {
+        return (
+          (s.structureType === STRUCTURE_TOWER ||
+            s.structureType === STRUCTURE_LINK ||
+            s.structureType === STRUCTURE_STORAGE ||
+            s.structureType === STRUCTURE_CONTAINER) &&
+          (<StructureLink>s).store.getFreeCapacity(RESOURCE_ENERGY) > 0
+        );
+      }
+    });
+    if (closest) {
+      TransferAction.setAction(this, closest, RESOURCE_ENERGY);
+    } else {
+      this.room.reassignIdleCreep(this);
+    }
+    return;
+  }
   const towerContainer = this.pos.findClosestByRange(FIND_STRUCTURES, {
     filter: (s: StructureTower) => {
       return s.structureType === STRUCTURE_TOWER && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
@@ -301,7 +324,7 @@ declare global {
   interface Creep {
     moveToTarget();
     goGetEnergy(hasWorkComponent: boolean, findHighest: boolean);
-    deliverEnergyToSpawner();
+    deliverEnergyToSpawner(nearest?: boolean);
     setNextAction();
     runAction();
     init: boolean;
