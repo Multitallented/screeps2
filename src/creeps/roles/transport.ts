@@ -1,4 +1,5 @@
 import { CreepRoleEnum } from "./creep-role-enum";
+import { GrandStrategyPlanner } from "../../war/grand-strategy-planner";
 import { MineEnergyAction } from "../actions/mine-energy";
 import { TransferAction } from "../actions/transfer";
 import { WithdrawAction } from "../actions/withdraw";
@@ -10,7 +11,10 @@ export class Transport {
     switch (creep.memory.action) {
       case WithdrawAction.KEY:
       case MineEnergyAction.KEY:
-        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) < 1) {
+        if (
+          creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0 &&
+          GrandStrategyPlanner.countEnergyAvailableInContainers(creep.room, true) > 0
+        ) {
           creep.goGetEnergy(creep.getActiveBodyparts(WORK) > 0, true);
         } else {
           creep.deliverEnergyToSpawner();

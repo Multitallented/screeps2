@@ -82,56 +82,66 @@ function populateCcontainerMemory(creep: Creep) {
 }
 
 const goGetEnergy = function (this: Creep, hasWorkComponent: boolean, findHighest: boolean) {
-  let closestContainer: Structure[] | Structure | null = null;
+  let closestContainer: Structure[] | Structure | Tombstone | null = null;
   const roomPercentFilled = this.room.energyAvailable / this.room.energyCapacityAvailable;
   if (findHighest) {
     populateCcontainerMemory(this);
-    closestContainer = _.sortBy(
-      this.room.find(FIND_STRUCTURES, {
-        filter: (s: Structure) => {
+    closestContainer = this.pos.findClosestByRange(FIND_TOMBSTONES, {
+      filter: (t: Tombstone) => {
+        return t.pos.x < 47 && t.pos.x > 3 && t.pos.y < 47 && t.pos.y > 3 && t.store.energy > 0;
+      }
+    });
+    if (!closestContainer) {
+      const droppedResources = this.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
+        filter: (r: Resource) => {
+          return r.pos.x < 47 && r.pos.x > 3 && r.pos.y < 47 && r.pos.y > 3;
+        }
+      });
+      if (droppedResources) {
+        PickupAction.setAction(this, droppedResources);
+        return;
+      }
+    }
+    if (!closestContainer) {
+      closestContainer = this.pos.findClosestByRange(FIND_STRUCTURES, {
+        filter: (s: StructureContainer | StructureLink | StructureStorage) => {
           return (
             (roomPercentFilled < 0.98 &&
-              (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
-              (s as StructureContainer).store.energy > 0 &&
+              (s.structureType === STRUCTURE_CONTAINER ||
+                s.structureType === STRUCTURE_STORAGE ||
+                s.structureType === STRUCTURE_LINK) &&
+              s.store.energy > 0 &&
+              (!this.room.memory.closestLink || s.id !== this.room.memory.closestLink) &&
               (!this.room.memory.ccontainer || s.id !== this.room.memory.ccontainer)) ||
             (roomPercentFilled >= 0.98 &&
-              s.structureType === STRUCTURE_CONTAINER &&
-              (s as StructureContainer).store.energy > 0 &&
+              (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_LINK) &&
+              s.store.energy > 0 &&
+              (!this.room.memory.closestLink || s.id !== this.room.memory.closestLink) &&
               (!this.room.memory.ccontainer || s.id !== this.room.memory.ccontainer))
           );
         }
-      }),
-      (s: StructureContainer) => {
-        return -1 * s.store.energy;
-      }
-    );
-    if (closestContainer.length > 0) {
-      closestContainer = closestContainer[0];
-    } else {
-      closestContainer = _.sortBy(
-        this.room.find(FIND_STRUCTURES, {
-          filter: (s: StructureLink) => {
-            return (
-              s.structureType === STRUCTURE_LINK &&
-              s.store.energy > 0 &&
-              (s.room.memory.closestLink == null || s.room.memory.closestLink !== s.id)
-            );
-          }
-        }),
-        (s: StructureLink) => {
-          return -1 * s.store.energy;
+      });
+    }
+    if (!closestContainer) {
+      closestContainer = this.pos.findClosestByRange(FIND_STRUCTURES, {
+        filter: (s: StructureContainer | StructureLink | StructureStorage) => {
+          return (
+            (roomPercentFilled < 0.98 &&
+              (s.structureType === STRUCTURE_CONTAINER ||
+                s.structureType === STRUCTURE_STORAGE ||
+                s.structureType === STRUCTURE_LINK) &&
+              s.store.energy > 0) ||
+            (roomPercentFilled >= 0.98 &&
+              (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_LINK) &&
+              s.store.energy > 0)
+          );
         }
-      );
-      if (closestContainer.length > 0) {
-        closestContainer = closestContainer[0];
-      } else {
-        closestContainer = null;
-      }
+      });
     }
   } else {
     let closestDistance = 99999;
-    _.forEach(this.room.find(FIND_STRUCTURES), (s: Structure) => {
-      if (s.structureType === STRUCTURE_LINK && (<StructureLink>s).store.energy > 0) {
+    _.forEach(this.room.find(FIND_STRUCTURES), (s: StructureLink | StructureStorage | StructureContainer) => {
+      if (s.structureType === STRUCTURE_LINK && s.store.energy > 0) {
         const distance = Math.max(1, this.pos.getRangeTo(s.pos));
         if (distance < closestDistance) {
           closestDistance = distance;
@@ -139,7 +149,7 @@ const goGetEnergy = function (this: Creep, hasWorkComponent: boolean, findHighes
         }
       } else if (
         (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_STORAGE) &&
-        (<StructureContainer>s).store.energy > 0
+        s.store.energy > 0
       ) {
         const distance = Math.max(1, this.pos.getRangeTo(s.pos));
         if (distance * 2 < closestDistance) {

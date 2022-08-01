@@ -39,6 +39,15 @@ export class TowerController {
             return;
           }
         }
+        if (tower.room.memory.towerRepair && tower.store.getUsedCapacity(RESOURCE_ENERGY) > 750) {
+          const repairTarget = <Structure>Game.getObjectById(tower.room.memory.towerRepair);
+          if (repairTarget && repairTarget.hits / repairTarget.hitsMax < 0.9 && repairTarget.hits < 160000) {
+            tower.repair(repairTarget);
+            return;
+          } else {
+            delete tower.room.memory.towerRepair;
+          }
+        }
         let sources: number;
         if (tower.room.memory.sources && tower.room.memory.sources.sources) {
           sources = Object.keys(tower.room.memory.sources.sources).length;
@@ -66,6 +75,7 @@ export class TowerController {
           );
           if (damagedStructure && damagedStructure.length > 0) {
             tower.repair(damagedStructure[0]);
+            tower.room.memory.towerRepair = damagedStructure[0].id;
             return;
           }
         }

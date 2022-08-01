@@ -193,7 +193,9 @@ function reassignCreepAndUpdateTravelerMemory(creep: Creep, newRole: CreepRoleEn
     if (!(Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers) {
       (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers = new Array<Id<_HasId>>();
     }
-    (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers.push(creep.id);
+    if ((Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers.indexOf(creep.id) === -1) {
+      (Memory.roomData[creep.room.name] as GlobalRoomMemory).travelers.push(creep.id);
+    }
   }
   creep.memory.role = newRole;
   delete creep.memory.action;
@@ -374,10 +376,6 @@ const reassignIdleCreep = function (this: Room, creep: Creep, force?: boolean) {
     return;
   }
   creep.memory.role = newRole;
-  const roomData = <GlobalRoomMemory>Memory.roomData[creep.room.name];
-  if (roomData && roomData.travelers && roomData.travelers.indexOf(creep.id) !== -1) {
-    roomData.travelers.splice(roomData.travelers.indexOf(creep.id), 1);
-  }
   delete creep.memory.action;
   delete creep.memory.target;
   incrementAndDecrement(creep.room, newRole, oldRole);

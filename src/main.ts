@@ -93,6 +93,7 @@ declare global {
     center?: RoomPosition;
     creepCount?: Map<CreepRoleEnum, number>;
     travelerRoom?: string;
+    towerRepair?: Id<_HasId>;
   }
 
   // Syntax for adding proprties to `global` (ex "global.log")

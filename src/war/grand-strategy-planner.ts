@@ -123,7 +123,7 @@ export class GrandStrategyPlanner {
       delete currentRoom.memory.travelerRoom;
       console.log("sending traveler " + creep.id + " to " + <string>(<unknown>helpRoom) + " from " + roomName);
       creep.memory.travel = helpRoom;
-      (Memory.roomData[helpRoom] as GlobalRoomMemory).travelers.push(creep.id);
+      (<GlobalRoomMemory>Memory.roomData[helpRoom]).travelers.push(creep.id);
     }
     return helpRoom;
   }
@@ -204,13 +204,16 @@ export class GrandStrategyPlanner {
     return helpRoom;
   }
 
-  public static countEnergyAvailableInContainers(room: Room): number {
+  public static countEnergyAvailableInContainers(room: Room, countLinks?: boolean): number {
     let energyInContainers = 0;
     if (room) {
       _.forEach(
         room.find(FIND_STRUCTURES, {
           filter: (s: Structure) => {
-            return s.structureType === STRUCTURE_CONTAINER;
+            return (
+              s.structureType === STRUCTURE_CONTAINER ||
+              (countLinks && (s.structureType === STRUCTURE_LINK || s.structureType === STRUCTURE_STORAGE))
+            );
           }
         }),
         (s: StructureContainer) => {
