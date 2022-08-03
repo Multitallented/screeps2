@@ -178,6 +178,14 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
         hasContainers ? CreepBodyBuilder.buildTransport(energy) : CreepBodyBuilder.buildBasicWorker(energy),
         0
       );
+    } else if (controllerLevel > 3 && percentEnergyAvailable < 0.6 && transports < 3) {
+      return CreepSpawnData.build(
+        CreepRoleEnum.TRANSPORT,
+        hasContainers
+          ? CreepBodyBuilder.buildTransport(this.room.energyAvailable)
+          : CreepBodyBuilder.buildBasicWorker(this.room.energyAvailable),
+        0
+      );
     } else if (upgraders < 1) {
       const energy = controllerLevel < 4 ? Math.min(this.room.energyAvailable, 600) : this.room.energyAvailable;
       return CreepSpawnData.build(CreepRoleEnum.UPGRADER, CreepBodyBuilder.buildBasicWorker(energy), 0);

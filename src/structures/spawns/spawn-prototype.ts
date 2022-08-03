@@ -1,10 +1,10 @@
 import { CreepRoleEnum } from "../../creeps/roles/creep-role-enum";
 import { CreepSpawnData } from "../../creeps/creep-spawn-data";
 
-const spawnNextCreep = function (this: StructureSpawn) {
+const spawnNextCreep = function (this: StructureSpawn): boolean {
   if (this.spawning) {
     // this.room.displayMessage(this.pos, this.spawning.name);
-    return;
+    return true;
   }
 
   const nextCreepToSpawn: CreepSpawnData | null = this.room.getPlanner(this.room).getNextCreepToSpawn();
@@ -21,13 +21,15 @@ const spawnNextCreep = function (this: StructureSpawn) {
         this.room.energyAvailable / this.room.energyCapacityAvailable >= nextCreepToSpawn.minPercentCapacity)
     ) {
       this.spawnCreep(nextCreepToSpawn.bodyArray, nextCreepToSpawn.name, nextCreepToSpawn.options);
+      return true;
     }
   }
+  return false;
 };
 
 declare global {
   interface StructureSpawn {
-    spawnNextCreep();
+    spawnNextCreep(): boolean;
     init: boolean;
   }
 }

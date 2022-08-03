@@ -4,6 +4,7 @@ import { SpawnPrototype } from "./spawn-prototype";
 export class SpawnController {
   public static spawnCreeps(room: Room): void {
     SpawnPrototype.init();
+    let spawned = true;
     _.forEach(
       room.find(FIND_STRUCTURES, {
         filter: (structure: Structure) => {
@@ -11,7 +12,10 @@ export class SpawnController {
         }
       }),
       (spawn: StructureSpawn) => {
-        spawn.spawnNextCreep();
+        if (!spawned) {
+          return;
+        }
+        spawned = spawn.spawnNextCreep();
       }
     );
   }
