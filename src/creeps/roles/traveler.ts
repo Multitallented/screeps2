@@ -101,11 +101,13 @@ export class Traveler {
       // creep.room.reassignIdleCreep(creep);
       if (creep.memory.homeRoom && creep.memory.homeRoom !== creep.room.name) {
         creep.memory.endRoom = creep.memory.homeRoom;
+        creep.memory.travel = creep.memory.endRoom;
         TravelingAction.setAction(creep, new RoomPosition(25, 25, creep.memory.homeRoom));
       }
       // LeaveRoomAction.setAction(creep, null);
     } else {
       creep.memory.endRoom = helpRoom;
+      creep.memory.travel = creep.memory.endRoom;
       TravelingAction.setAction(creep, new RoomPosition(25, 25, helpRoom));
     }
   }

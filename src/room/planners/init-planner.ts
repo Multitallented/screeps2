@@ -34,6 +34,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     //     }});
     const constructionSites = this.room.find(FIND_CONSTRUCTION_SITES).length;
     const spawns = this.room.find(FIND_MY_SPAWNS).length;
+    const percentEnergyAvailable = this.room.energyAvailable / this.room.energyCapacityAvailable;
     if (spawns < 1 || (builders + upgraders + miners < 2 && this.room.energyAvailable < 300)) {
       this.room.memory.sendBuilders = true;
     } else if (this.room.energyAvailable / this.room.energyCapacityAvailable > 0.63) {
@@ -63,6 +64,9 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     }
     if (spawns > 0 && builders > transports && transports < 2) {
       return { newRole: CreepRoleEnum.TRANSPORT, oldRole: CreepRoleEnum.BUILDER, type: "single" };
+    }
+    if (spawns > 0 && percentEnergyAvailable < 0.6 && upgraders > 3) {
+      return { newRole: CreepRoleEnum.TRANSPORT, oldRole: CreepRoleEnum.UPGRADER, type: "single" };
     }
     if (
       ((upgraders / 2 > builders && constructionSites > 0) ||
@@ -256,7 +260,13 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
         return CreepSpawnData.build(CreepRoleEnum.CLAIMER, CreepBodyBuilder.buildClaimer(), 0.5);
       }
     }
-    if (travelerRoom && this.room.energyAvailable > 600 && upgraders > 2 && percentEnergyAvailable <= 0.7) {
+    if (
+      travelerRoom &&
+      this.room.energyAvailable > 600 &&
+      upgraders > 2 &&
+      percentEnergyAvailable <= 0.7 &&
+      upgraders + builders + transports < 8
+    ) {
       return CreepSpawnData.build(
         CreepRoleEnum.TRAVELER,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 450)),
