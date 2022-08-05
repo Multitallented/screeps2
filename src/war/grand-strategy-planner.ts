@@ -130,6 +130,7 @@ export class GrandStrategyPlanner {
 
   private static findHelpRoom(creep: Creep | null, roomName: string, currentRoom: Room) {
     let helpRoom: string | null = null;
+    let highestEnergyAvailable = 0;
     _.forEach(Memory.roomData, (roomData: GlobalRoomMemory, key) => {
       if (!key || roomName === key) {
         return;
@@ -191,13 +192,16 @@ export class GrandStrategyPlanner {
         (miningRoom && roomDistance < 2 && roomIsOneRoomAway) ||
         (roomDistance < 3 && room && room.memory.sendBuilders)
       ) {
+        const energyAvailable = this.countEnergyAvailableInContainers(room);
         if (
           !GrandStrategyPlanner.hasHostilesInRoom(key) &&
           (roomData.travelers.length - 4 < Math.max(2, numberOfSpots) ||
-            (this.countEnergyAvailableInContainers(room) > 500 &&
-              roomData.travelers.length - 10 < Math.max(2, numberOfSpots)))
+            (energyAvailable > 500 && roomData.travelers.length - 10 < Math.max(2, numberOfSpots)))
         ) {
-          helpRoom = key;
+          if (energyAvailable > highestEnergyAvailable) {
+            highestEnergyAvailable = energyAvailable;
+            helpRoom = key;
+          }
         }
       }
     });
