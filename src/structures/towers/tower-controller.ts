@@ -40,7 +40,12 @@ export class TowerController {
           }
         }
         if (tower.room.memory.towerRepair && tower.store.getUsedCapacity(RESOURCE_ENERGY) > 750) {
-          const repairTarget = <Structure>Game.getObjectById(tower.room.memory.towerRepair);
+          let repairTarget: Structure | null = <Structure>Game.getObjectById(tower.room.memory.towerRepair);
+          const energyPercentAvailable = tower.room.energyAvailable / tower.room.energyCapacityAvailable;
+          if (energyPercentAvailable < 0.3 && repairTarget) {
+            delete tower.room.memory.towerRepair;
+            repairTarget = null;
+          }
           if (repairTarget && repairTarget.hits / repairTarget.hitsMax < 0.9 && repairTarget.hits < 160000) {
             tower.repair(repairTarget);
             return;

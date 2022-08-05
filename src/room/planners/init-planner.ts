@@ -182,7 +182,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
         hasContainers ? CreepBodyBuilder.buildTransport(energy) : CreepBodyBuilder.buildBasicWorker(energy),
         0
       );
-    } else if (controllerLevel > 3 && percentEnergyAvailable < 0.6 && transports < 3) {
+    } else if (controllerLevel > 3 && percentEnergyAvailable < 0.6 && transports < 2) {
       return CreepSpawnData.build(
         CreepRoleEnum.TRANSPORT,
         hasContainers

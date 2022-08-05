@@ -11,14 +11,7 @@ export class Transport {
     switch (creep.memory.action) {
       case WithdrawAction.KEY:
       case MineEnergyAction.KEY:
-        if (
-          creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0 &&
-          GrandStrategyPlanner.countEnergyAvailableInContainers(creep.room, true) > 0
-        ) {
-          creep.goGetEnergy(creep.getActiveBodyparts(WORK) > 0, true);
-        } else {
-          creep.deliverEnergyToSpawner();
-        }
+        creep.deliverEnergyToSpawner();
         break;
       case TransferAction.KEY:
       default:
