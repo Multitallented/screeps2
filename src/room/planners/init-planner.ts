@@ -278,6 +278,12 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 1000)),
         1
       );
+    } else if (builders < 1 && percentEnergyAvailable > 0.5) {
+      return CreepSpawnData.build(
+        CreepRoleEnum.BUILDER,
+        CreepBodyBuilder.buildBasicWorker(this.room.energyAvailable),
+        1
+      );
     } else if (percentEnergyAvailable > 0.9 && upgraders < 4 && controllerLevel < 4) {
       return CreepSpawnData.build(
         CreepRoleEnum.UPGRADER,

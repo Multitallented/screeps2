@@ -9,10 +9,15 @@ import { WithdrawAction } from "../actions/withdraw";
 export class Builder {
   static KEY: CreepRoleEnum = CreepRoleEnum.BUILDER;
   public static setAction(creep: Creep): void {
+    const percentEnergyAvailable = creep.room.energyAvailable / creep.room.energyCapacityAvailable;
     switch (creep.memory.action) {
       case WithdrawAction.KEY:
       case MineEnergyAction.KEY:
-        this.findNextJob(creep);
+        if (percentEnergyAvailable > 0.4 && creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+          creep.goGetEnergy(creep.getActiveBodyparts(WORK) > 0, true);
+        } else {
+          this.findNextJob(creep);
+        }
         break;
       case BuildAction.KEY:
       case RepairAction.KEY:
