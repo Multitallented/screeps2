@@ -196,7 +196,7 @@ export class GrandStrategyPlanner {
         if (
           !GrandStrategyPlanner.hasHostilesInRoom(key) &&
           (roomData.travelers.length - 4 < Math.max(2, numberOfSpots) ||
-            (energyAvailable > 500 && roomData.travelers.length - 10 < Math.max(2, numberOfSpots)))
+            (energyAvailable > 500 && roomData.travelers.length - 6 < Math.max(2, numberOfSpots)))
         ) {
           if (energyAvailable > highestEnergyAvailable) {
             highestEnergyAvailable = energyAvailable;

@@ -21,6 +21,7 @@ import { UpgradeControllerAction } from "./actions/upgrade-controller";
 import { Upgrader } from "./roles/upgrader";
 import { WaitAction } from "./actions/wait";
 import { WithdrawAction } from "./actions/withdraw";
+import { RecycleAction } from "./actions/recycle";
 
 const moveToTarget = function (this: Creep) {
   LeaveRoomAction.moveIntoRoom(this);
@@ -282,6 +283,9 @@ const setNextAction = function (this: Creep) {
 
 const runAction = function (this: Creep) {
   switch (this.memory.action) {
+    case RecycleAction.KEY:
+      RecycleAction.run(this);
+      break;
     case MoveAction.KEY:
       MoveAction.run(this);
       break;

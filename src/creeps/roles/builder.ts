@@ -2,6 +2,7 @@ import * as _ from "lodash";
 import { BuildAction } from "../actions/build";
 import { CreepRoleEnum } from "./creep-role-enum";
 import { MineEnergyAction } from "../actions/mine-energy";
+import { RecycleAction } from "../actions/recycle";
 import { RepairAction } from "../actions/repair";
 import { WithdrawAction } from "../actions/withdraw";
 
@@ -85,10 +86,12 @@ export class Builder {
     );
     if (repairThese.length > 0) {
       RepairAction.setAction(creep, repairThese[0]);
+      creep.runAction();
     } else {
       const site = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
       if (site) {
         BuildAction.setAction(creep, site);
+        creep.runAction();
       } else {
         const repairThese2 = _.sortBy(
           creep.room.find(FIND_STRUCTURES, {
@@ -106,9 +109,15 @@ export class Builder {
         );
         if (repairThese2.length > 0) {
           RepairAction.setAction(creep, repairThese2[0]);
+          creep.runAction();
         } else {
           const percentEnergyAvailable = creep.room.energyAvailable / creep.room.energyCapacityAvailable;
-          creep.room.reassignIdleCreep(creep, percentEnergyAvailable > 0.6);
+          if (percentEnergyAvailable > 0.6) {
+            RecycleAction.setAction(creep);
+            creep.runAction();
+          } else {
+            creep.room.reassignIdleCreep(creep, false);
+          }
           return;
         }
       }

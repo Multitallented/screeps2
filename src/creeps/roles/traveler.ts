@@ -2,6 +2,7 @@ import { CreepRoleEnum } from "./creep-role-enum";
 import { GrandStrategyPlanner } from "../../war/grand-strategy-planner";
 import { LeaveRoomAction } from "../actions/leave-room";
 import { MineEnergyAction } from "../actions/mine-energy";
+import { RecycleAction } from "../actions/recycle";
 import { TransferAction } from "../actions/transfer";
 import { TravelingAction } from "../actions/traveling";
 import { WithdrawAction } from "../actions/withdraw";
@@ -87,7 +88,7 @@ export class Traveler {
         } else {
           Traveler.getNextRoom(creep);
           if (!creep.memory.travel) {
-            creep.room.reassignIdleCreep(creep, true);
+            RecycleAction.setAction(creep);
           }
         }
         break;

@@ -1,6 +1,7 @@
 import { AttackAction } from "../actions/attack";
 import { CreepRoleEnum } from "./creep-role-enum";
 import { GrandStrategyPlanner } from "../../war/grand-strategy-planner";
+import { RecycleAction } from "../actions/recycle";
 import { TravelingAction } from "../actions/traveling";
 
 export class Melee {
@@ -28,6 +29,9 @@ export class Melee {
     const hostileRoom = GrandStrategyPlanner.findHostileRoom(creep.room.name, creep);
     if (hostileRoom) {
       TravelingAction.setAction(creep, new RoomPosition(25, 25, hostileRoom));
+      creep.runAction();
+    } else if (creep.room.find(FIND_MY_SPAWNS).length > 0) {
+      RecycleAction.setAction(creep);
       creep.runAction();
     }
   }
