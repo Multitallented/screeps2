@@ -11,7 +11,6 @@ import { Traveler } from "../creeps/roles/traveler";
 import { VoidPlanner } from "./planners/void-planner";
 import { WaitAction } from "../creeps/actions/wait";
 import { Util } from "../utils/util";
-import {GrandStrategyPlanner} from "../war/grand-strategy-planner";
 
 const getPlanner = function (room: Room): RoomPlannerInterface {
   return getPlannerByName(room, getPlannerType(room));

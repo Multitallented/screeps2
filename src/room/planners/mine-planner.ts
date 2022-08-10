@@ -26,7 +26,12 @@ export class MinePlanner extends Planner implements RoomPlannerInterface {
     }
     if (GrandStrategyPlanner.hasHostilesInRoom(this.room.name)) {
       delete (Memory.roomData[this.room.name] as GlobalRoomMemory).status;
-    } else {
+    } else if (
+      this.room.memory.creepCount &&
+      (this.room.memory.creepCount[CreepRoleEnum.TRAVELER] ||
+        this.room.memory.creepCount[CreepRoleEnum.BUILDER] ||
+        this.room.memory.creepCount[CreepRoleEnum.MINER])
+    ) {
       (Memory.roomData[this.room.name] as GlobalRoomMemory).status = "mine";
     }
     if (!this.room.memory.sites) {

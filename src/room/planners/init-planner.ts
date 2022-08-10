@@ -65,7 +65,7 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
     if (spawns > 0 && builders > transports && transports < 2) {
       return { newRole: CreepRoleEnum.TRANSPORT, oldRole: CreepRoleEnum.BUILDER, type: "single" };
     }
-    if (spawns > 0 && percentEnergyAvailable < 0.6 && upgraders > 3) {
+    if (spawns > 0 && percentEnergyAvailable < 0.6 && upgraders > 3 && transports < 5) {
       return { newRole: CreepRoleEnum.TRANSPORT, oldRole: CreepRoleEnum.UPGRADER, type: "single" };
     }
     if (
@@ -239,12 +239,12 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 900)),
         1
       );
-    } else if (GrandStrategyPlanner.canClaimAnyRoom()) {
+    } else if (this.room.energyAvailable > 649 && GrandStrategyPlanner.canClaimAnyRoom()) {
       // TODO only build 1 for the room
       return CreepSpawnData.build(CreepRoleEnum.CLAIMER, CreepBodyBuilder.buildClaimer(), 0.5);
     }
     const travelerRoom = GrandStrategyPlanner.findTravelerDestinationRoom(this.room.name, null);
-    if (travelerRoom && Game.rooms[travelerRoom]) {
+    if (this.room.energyAvailable > 649 && travelerRoom && Game.rooms[travelerRoom]) {
       const travelerRoomActive = Game.rooms[travelerRoom];
       const claimers = travelerRoomActive.find(FIND_MY_CREEPS, {
         filter: (c: Creep) => {

@@ -1,5 +1,4 @@
 import { CreepRoleEnum } from "./creep-role-enum";
-import { GrandStrategyPlanner } from "../../war/grand-strategy-planner";
 import { MineEnergyAction } from "../actions/mine-energy";
 import { TransferAction } from "../actions/transfer";
 import { WithdrawAction } from "../actions/withdraw";
