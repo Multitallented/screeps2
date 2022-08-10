@@ -225,7 +225,8 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       );
     } else if (
       controllerLevel < 4 &&
-      upgraders + 1 < Math.max(2, this.room.getTotalNumberOfMiningSpaces()) &&
+      upgraders + builders + (hasContainers ? 0 : transports) + 2 <
+        Math.max(2, this.room.getTotalNumberOfMiningSpaces()) &&
       upgraders / 2 <= builders
     ) {
       return CreepSpawnData.build(
@@ -233,7 +234,11 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 900)),
         1
       );
-    } else if (constructionSites > 0 && ((builders < 3 * sources && controllerLevel < 4) || builders < 3)) {
+    } else if (
+      constructionSites > 0 &&
+      ((builders + upgraders - 2 < Math.max(2, this.room.getTotalNumberOfMiningSpaces()) && controllerLevel < 4) ||
+        builders < 3)
+    ) {
       return CreepSpawnData.build(
         CreepRoleEnum.BUILDER,
         CreepBodyBuilder.buildBasicWorker(Math.min(this.room.energyAvailable, 900)),
