@@ -5,6 +5,10 @@ export class CreepBodyBuilder {
     return [MOVE, CLAIM];
   }
 
+  static buildScout(): Array<BodyPartConstant> {
+    return [MOVE];
+  }
+
   static buildBasicWorker(energyAvailable: number): Array<BodyPartConstant> {
     const bodyArray: Array<BodyPartConstant> = [MOVE, CARRY, WORK];
     energyAvailable -= 200;

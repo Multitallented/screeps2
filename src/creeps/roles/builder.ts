@@ -75,12 +75,14 @@ export class Builder {
   }
 
   public static findNextJob(creep: Creep): void {
+    const site = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
     const repairThese = _.sortBy(
       creep.room.find(FIND_STRUCTURES, {
         filter: (s: Structure) => {
+          const wallOrRampart = s.structureType === STRUCTURE_RAMPART || s.structureType === STRUCTURE_WALL;
           return (
-            ((s.structureType !== STRUCTURE_RAMPART && s.structureType !== STRUCTURE_WALL) || s.hits < 1000) &&
-            s.hits / s.hitsMax < 0.75 &&
+            (!wallOrRampart || s.hits < 1000) &&
+            ((s.hits / s.hitsMax < 0.75 && !site) || s.hits / s.hitsMax < 0.25) &&
             s.hits < 250000
           );
         }
@@ -93,7 +95,6 @@ export class Builder {
       RepairAction.setAction(creep, repairThese[0]);
       creep.runAction();
     } else {
-      const site = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
       if (site) {
         BuildAction.setAction(creep, site);
         creep.runAction();

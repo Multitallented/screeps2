@@ -248,6 +248,13 @@ export class InitPlanner extends Planner implements RoomPlannerInterface {
       // TODO only build 1 for the room
       return CreepSpawnData.build(CreepRoleEnum.CLAIMER, CreepBodyBuilder.buildClaimer(), 0.5);
     }
+    if (
+      percentEnergyAvailable > 0.6 &&
+      this.room.memory.ticksTillNextConstruction &&
+      this.room.memory.ticksTillNextConstruction > 119
+    ) {
+      return CreepSpawnData.build(CreepRoleEnum.SCOUT, CreepBodyBuilder.buildScout(), 0.6);
+    }
     const travelerRoom = GrandStrategyPlanner.findTravelerDestinationRoom(this.room.name, null);
     if (this.room.energyAvailable > 649 && travelerRoom && Game.rooms[travelerRoom]) {
       const travelerRoomActive = Game.rooms[travelerRoom];
