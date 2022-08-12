@@ -2,7 +2,7 @@ import { CreepRoleEnum } from "./creep-role-enum";
 import { LeaveRoomAction } from "../actions/leave-room";
 import { WaitAction } from "../actions/wait";
 
-export class Transport {
+export class Scout {
   static KEY: CreepRoleEnum = CreepRoleEnum.SCOUT;
   public static setAction(creep: Creep): void {
     if (creep.room.controller && creep.room.controller.my) {

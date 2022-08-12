@@ -11,8 +11,10 @@ import { MineEnergyAction } from "./actions/mine-energy";
 import { Miner } from "./roles/miner";
 import { MoveAction } from "./actions/move";
 import { PickupAction } from "./actions/pickup";
+import { RecycleAction } from "./actions/recycle";
 import { RepairAction } from "./actions/repair";
 import { ReserveControllerAction } from "./actions/reserve-controller";
+import { Scout } from "./roles/scout";
 import { TransferAction } from "./actions/transfer";
 import { Transport } from "./roles/transport";
 import { Traveler } from "./roles/traveler";
@@ -21,14 +23,13 @@ import { UpgradeControllerAction } from "./actions/upgrade-controller";
 import { Upgrader } from "./roles/upgrader";
 import { WaitAction } from "./actions/wait";
 import { WithdrawAction } from "./actions/withdraw";
-import { RecycleAction } from "./actions/recycle";
 
-const moveToTarget = function (this: Creep) {
+const moveToTarget = function (this: Creep): number {
   LeaveRoomAction.moveIntoRoom(this);
   if (this.fatigue > 0) {
-    return;
+    return ERR_TIRED;
   }
-  let moveMessage;
+  let moveMessage = 0;
   if (this.memory.destination) {
     moveMessage = this.moveTo(this.memory.destination.x, this.memory.destination.y, {
       reusePath: 999,
@@ -42,7 +43,7 @@ const moveToTarget = function (this: Creep) {
       delete this.memory.target;
     }
   } else {
-    return;
+    return ERR_INVALID_TARGET;
   }
   if (moveMessage !== ERR_TIRED) {
     if (this.memory.prevPos && this.memory.prevPos.x === this.pos.x && this.memory.prevPos.y === this.pos.y) {
@@ -53,6 +54,7 @@ const moveToTarget = function (this: Creep) {
       this.memory.prevPos = this.pos;
     }
   }
+  return moveMessage;
 };
 
 function populateCcontainerMemory(creep: Creep) {
@@ -274,6 +276,9 @@ const setNextAction = function (this: Creep) {
     case CreepRoleEnum.MELEE:
       Melee.setAction(this);
       break;
+    case CreepRoleEnum.SCOUT:
+      Scout.setAction(this);
+      break;
     case Upgrader.KEY:
     default:
       Upgrader.setAction(this);
@@ -336,7 +341,7 @@ const runAction = function (this: Creep) {
 
 declare global {
   interface Creep {
-    moveToTarget();
+    moveToTarget(): number;
     goGetEnergy(hasWorkComponent: boolean, findHighest: boolean);
     deliverEnergyToSpawner(nearest?: boolean);
     setNextAction();

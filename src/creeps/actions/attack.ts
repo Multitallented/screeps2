@@ -7,15 +7,22 @@ export class AttackAction {
       creep.setNextAction();
       return;
     }
-    const invader: Creep | Structure = Game.getObjectById(creep.memory.target) as Creep | Structure;
+    let invader: Creep | Structure = Game.getObjectById(creep.memory.target) as Creep | Structure;
     if (!invader) {
       delete creep.memory.target;
       creep.setNextAction();
       return;
     }
     if (!creep.pos.inRangeTo(invader, 1)) {
-      creep.moveToTarget();
-      return;
+      const moveMessage = creep.moveToTarget();
+      if (moveMessage === ERR_NO_PATH) {
+        const hostileStructureFind = creep.pos.findInRange(FIND_HOSTILE_STRUCTURES, 1);
+        if (hostileStructureFind.length > 0) {
+          invader = hostileStructureFind[0];
+        } else {
+          return;
+        }
+      }
     }
     creep.attack(invader);
     creep.moveTo(invader.pos);

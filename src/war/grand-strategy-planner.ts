@@ -337,6 +337,9 @@ export class GrandStrategyPlanner {
       ) {
         return;
       }
+      if (room.controller && room.controller.safeMode) {
+        return;
+      }
       if (!shouldDefendRoom && (Memory.roomData[key] as GlobalRoomMemory).defenders.length > 8) {
         return;
       }

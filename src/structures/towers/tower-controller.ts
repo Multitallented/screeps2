@@ -40,49 +40,55 @@ export class TowerController {
           }
         }
         if (tower.room.find(FIND_CONSTRUCTION_SITES).length < 1) {
-          if (tower.room.memory.towerRepair && tower.store.getUsedCapacity(RESOURCE_ENERGY) > 750) {
-            let repairTarget: Structure | null = <Structure>Game.getObjectById(tower.room.memory.towerRepair);
-            const energyPercentAvailable = tower.room.energyAvailable / tower.room.energyCapacityAvailable;
-            if (energyPercentAvailable < 0.3 && repairTarget) {
-              delete tower.room.memory.towerRepair;
-              repairTarget = null;
-            }
-            if (repairTarget && repairTarget.hits / repairTarget.hitsMax < 0.9 && repairTarget.hits < 160000) {
-              tower.repair(repairTarget);
-              return;
-            } else {
-              delete tower.room.memory.towerRepair;
-            }
-          }
-          let sources: number;
-          if (tower.room.memory.sources && tower.room.memory.sources.sources) {
-            sources = Object.keys(tower.room.memory.sources.sources).length;
-          } else {
-            sources = tower.room.find(FIND_SOURCES_ACTIVE).length;
-          }
-          const controllerLevel = tower.room.controller ? tower.room.controller.level : 0;
+          const travelerRoom = GrandStrategyPlanner.findTravelerDestinationRoom(tower.room.name, null);
           if (
-            tower.store.getUsedCapacity(RESOURCE_ENERGY) > 750 &&
-            controllerLevel > 2 &&
-            tower.room.getNumberOfCreepsByRole(CreepRoleEnum.UPGRADER) > 0 &&
-            tower.room.getNumberOfCreepsByRole(CreepRoleEnum.TRANSPORT) > 0 &&
-            tower.room.energyAvailable > 0.6 * tower.room.energyCapacityAvailable &&
-            tower.room.getNumberOfCreepsByRole(CreepRoleEnum.MINER) >= sources
+            !travelerRoom ||
+            (tower.room.memory.creepCount && tower.room.memory.creepCount[CreepRoleEnum.BUILDER] < 2)
           ) {
-            const damagedStructure = _.sortBy(
-              tower.room.find(FIND_STRUCTURES, {
-                filter: (s: Structure) => {
-                  return s.hits / s.hitsMax < 0.75 && s.hits < 150000;
-                }
-              }),
-              (s: Structure) => {
-                return s.hits;
+            if (tower.room.memory.towerRepair && tower.store.getUsedCapacity(RESOURCE_ENERGY) > 750) {
+              let repairTarget: Structure | null = <Structure>Game.getObjectById(tower.room.memory.towerRepair);
+              const energyPercentAvailable = tower.room.energyAvailable / tower.room.energyCapacityAvailable;
+              if (energyPercentAvailable < 0.3 && repairTarget) {
+                delete tower.room.memory.towerRepair;
+                repairTarget = null;
               }
-            );
-            if (damagedStructure && damagedStructure.length > 0) {
-              tower.repair(damagedStructure[0]);
-              tower.room.memory.towerRepair = damagedStructure[0].id;
-              return;
+              if (repairTarget && repairTarget.hits / repairTarget.hitsMax < 0.9 && repairTarget.hits < 160000) {
+                tower.repair(repairTarget);
+                return;
+              } else {
+                delete tower.room.memory.towerRepair;
+              }
+            }
+            let sources: number;
+            if (tower.room.memory.sources && tower.room.memory.sources.sources) {
+              sources = Object.keys(tower.room.memory.sources.sources).length;
+            } else {
+              sources = tower.room.find(FIND_SOURCES_ACTIVE).length;
+            }
+            const controllerLevel = tower.room.controller ? tower.room.controller.level : 0;
+            if (
+              tower.store.getUsedCapacity(RESOURCE_ENERGY) > 750 &&
+              controllerLevel > 2 &&
+              tower.room.getNumberOfCreepsByRole(CreepRoleEnum.UPGRADER) > 0 &&
+              tower.room.getNumberOfCreepsByRole(CreepRoleEnum.TRANSPORT) > 0 &&
+              tower.room.energyAvailable > 0.6 * tower.room.energyCapacityAvailable &&
+              tower.room.getNumberOfCreepsByRole(CreepRoleEnum.MINER) >= sources
+            ) {
+              const damagedStructure = _.sortBy(
+                tower.room.find(FIND_STRUCTURES, {
+                  filter: (s: Structure) => {
+                    return s.hits / s.hitsMax < 0.75 && s.hits < 150000;
+                  }
+                }),
+                (s: Structure) => {
+                  return s.hits;
+                }
+              );
+              if (damagedStructure && damagedStructure.length > 0) {
+                tower.repair(damagedStructure[0]);
+                tower.room.memory.towerRepair = damagedStructure[0].id;
+                return;
+              }
             }
           }
         }
