@@ -27,7 +27,15 @@ declare global {
   interface GlobalRoomMemory {
     sources: SourceMemory;
     posMap: Array<RoomObjectFixed>;
-    creepNeeds: Array<NeedCreep>;
+    creepNeeds: Map<string, NeedCreep>;
+    hostileCreeps: number;
+    hostileMelee: number;
+    hostileHealer: number;
+    hostileRanged: number;
+    hostileBuildings: number;
+    hostileWorkers: number;
+    hostilePowerCreeps: number;
+    hostileStructures: number;
   }
 
   interface CreepMemory {
@@ -40,6 +48,7 @@ declare global {
     toRoom?: string;
     endRoom?: string;
     withdraw?: boolean; // If the creep is supposed to withdraw or deposit
+    need?: string;
   }
 
   interface SourceMemory {

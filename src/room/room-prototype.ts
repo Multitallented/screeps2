@@ -1,5 +1,5 @@
 import _ from "lodash";
-import {Util} from "../utils/util";
+import { Util } from "../utils/util";
 
 const getNumberOfMiningSpacesAtSource = function (this: Room, sourceId: Id<Source>): number {
   const roomData = Memory.roomData[this.name];
@@ -91,11 +91,18 @@ const getAdjacentRoomName = function (this: Room, direction: ExitConstant): stri
 
 const getEnergyInStorage = function (this: Room): number {
   let energy = 0;
-  _.forEach(this.find(FIND_STRUCTURES, {filter : (s:Structure) => {return s.structureType === STRUCTURE_STORAGE || s.structureType === STRUCTURE_CONTAINER}}), (s:StructureStorage | StructureContainer) => {
-    energy += s.store.energy;
-  });
+  _.forEach(
+    this.find(FIND_STRUCTURES, {
+      filter: (s: Structure) => {
+        return s.structureType === STRUCTURE_STORAGE || s.structureType === STRUCTURE_CONTAINER;
+      }
+    }),
+    (s: StructureStorage | StructureContainer) => {
+      energy += s.store.energy;
+    }
+  );
   return energy;
-}
+};
 
 declare global {
   interface Room {
