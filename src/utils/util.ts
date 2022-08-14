@@ -30,10 +30,6 @@ export class Util {
     return "N";
   }
 
-  public static getNeedKey(role: CreepRoleEnum, pos: RoomPosition): string {
-    return role + ":" + pos.roomName + ":" + <string>(<unknown>pos.x) + ":" + <string>(<unknown>pos.y);
-  }
-
   public static getRoomPositionKey(x: number, y: number): string {
     return <string>(<unknown>x) + ":" + <string>(<unknown>y);
   }

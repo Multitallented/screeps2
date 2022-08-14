@@ -27,7 +27,7 @@ declare global {
   interface GlobalRoomMemory {
     sources: SourceMemory;
     posMap: Array<RoomObjectFixed>;
-    creepNeeds: Map<string, NeedCreep>;
+    creepNeeds: Array<NeedCreep>;
     hostileCreeps: number;
     hostileMelee: number;
     hostileHealer: number;
