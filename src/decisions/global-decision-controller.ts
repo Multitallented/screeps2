@@ -6,15 +6,13 @@ import _ from "lodash";
 
 export class GlobalDecisionController {
   public static generateNeeds(): void {
-    for (const roomName in Memory.roomData) {
-      const roomData = Util.getRoomData(roomName);
-      for (const need of roomData.creepNeeds) {
-        need.old = true;
-      }
+    for (const need of Memory.creepNeeds) {
+      need.old = true;
     }
     this.scanAllOccupiedRoomsForHostiles();
     this.replaceMissingFixedCreeps();
     this.generateMovingCreepNeeds();
+    this.cleanupOldNeeds();
   }
 
   public static scanAllOccupiedRoomsForHostiles(): void {
@@ -77,13 +75,11 @@ export class GlobalDecisionController {
       }
       this.generateTransporterNeeds(room);
       this.generateUpgraderNeeds(room);
-      this.cleanupOldNeeds(room);
     }
   }
 
-  public static cleanupOldNeeds(room: Room): void {
-    const roomData = Util.getRoomData(room.name);
-    roomData.creepNeeds = _.pick(roomData.creepNeeds, function (need: NeedCreep, key) {
+  public static cleanupOldNeeds(): void {
+    Memory.creepNeeds = _.pick(Memory.creepNeeds, function (need: NeedCreep) {
       if (!need.old && need.filled) {
         const creep = Game.creeps[need.filled];
         if (creep) {
@@ -113,9 +109,8 @@ export class GlobalDecisionController {
 
   public static hasNeedCreep(role: CreepRoleEnum, roomName: string, count: number, x?: number, y?: number): boolean {
     const positionDependent = x && y;
-    const roomData = Util.getRoomData(roomName);
     let i = -1;
-    for (const need of roomData.creepNeeds) {
+    for (const need of Memory.creepNeeds) {
       if (need.creepRole === role && (!positionDependent || (need.pos.x === x && need.pos.y === y))) {
         need.old = false;
         i++;
@@ -128,10 +123,9 @@ export class GlobalDecisionController {
     const travelerCount = room.controller && room.controller.my ? 2 : 1;
     const mem: CreepMemory = { role: CreepRoleEnum.TRANSPORT };
     const pos = new RoomPosition(25, 25, room.name);
-    const roomData = Util.getRoomData(room.name);
     for (let i = 0; i < travelerCount; i++) {
       if (this.hasNeedCreep(CreepRoleEnum.TRANSPORT, room.name, i)) {
-        roomData.creepNeeds.push(
+        Memory.creepNeeds.push(
           new NeedCreep(CreepRoleEnum.TRANSPORT, transporters ? 500 : 1000, mem, pos, null, null, false)
         );
       }
@@ -147,19 +141,19 @@ export class GlobalDecisionController {
       const roomData: GlobalRoomMemory = <GlobalRoomMemory>Memory.roomData[roomName];
       for (const roomObjectFixed of roomData.posMap) {
         if (roomObjectFixed.creepRole) {
-          this.createFixedCreepNeed(roomObjectFixed, roomName, roomData);
+          this.createFixedCreepNeed(roomObjectFixed, roomName);
         }
       }
     }
   }
 
-  private static createFixedCreepNeed(roomObjectFixed: RoomObjectFixed, roomName: string, roomData: GlobalRoomMemory) {
+  private static createFixedCreepNeed(roomObjectFixed: RoomObjectFixed, roomName: string) {
     const creep = Game.creeps[roomObjectFixed.id];
     if (!creep || !creep.ticksToLive || creep.ticksToLive < 60) {
       const pos = new RoomPosition(roomObjectFixed.x, roomObjectFixed.y, roomName);
       const mem: CreepMemory = { role: roomObjectFixed.creepRole, destination: pos };
       if (this.hasNeedCreep(roomObjectFixed.creepRole, roomName, 0, pos.x, pos.y)) {
-        roomData.creepNeeds.push(
+        Memory.creepNeeds.push(
           new NeedCreep(
             roomObjectFixed.creepRole,
             roomObjectFixed.priority,

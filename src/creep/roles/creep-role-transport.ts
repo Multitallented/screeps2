@@ -2,10 +2,7 @@ import { CreepUtil } from "utils/creep-util";
 import { CreepRole } from "../creep-role";
 
 export class CreepRoleTransport implements CreepRole {
-  constructor(public creep: Creep) {
-  }
-
-  public doAction(): boolean {
+  public doAction(creep: Creep): boolean {
     // TODO finish this
     return true;
   }

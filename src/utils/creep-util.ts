@@ -1,3 +1,8 @@
+import { CreepRole } from "../creep/creep-role";
+import { CreepRoleEnum } from "../creep/creep-role-enum";
+import { CreepRoleTransfer } from "../creep/roles/creep-role-transfer";
+import { CreepRoleTransport } from "../creep/roles/creep-role-transport";
+
 export class CreepUtil {
   public static getBodyPartCost(bodyPartConstant: BodyPartConstant): number {
     switch (bodyPartConstant) {
@@ -17,6 +22,16 @@ export class CreepUtil {
       case CARRY:
       default:
         return 50;
+    }
+  }
+
+  public static getCreepRole(role: CreepRoleEnum): CreepRole {
+    switch (role) {
+      case CreepRoleEnum.TRANSPORT:
+        return new CreepRoleTransport();
+      case CreepRoleEnum.TRANSFER:
+      default:
+        return new CreepRoleTransfer();
     }
   }
 }

@@ -30,6 +30,24 @@ export class Util {
     return "N";
   }
 
+  public static getDistanceBetweenTwoRooms(room1Name: string, room2Name: string): number {
+    const is1West = room1Name.indexOf("W") !== -1;
+    const is1North = room1Name.indexOf("N") !== -1;
+    const split1Name = room1Name.slice(1).split(is1North ? "N" : "S");
+    const x1 = Number(split1Name[0]);
+    const y1 = Number(split1Name[1]);
+
+    const is2West = room2Name.indexOf("W") !== -1;
+    const is2North = room2Name.indexOf("N") !== -1;
+    const split2Name = room2Name.slice(1).split(is2North ? "N" : "S");
+    const x2 = Number(split2Name[0]);
+    const y2 = Number(split2Name[1]);
+
+    const verticalDistance = Math.abs(is1West === is2West ? x1 - x2 : x1 + x2);
+    const horizontalDistance = Math.abs(is1North === is2North ? y1 - y2 : y1 + y2);
+    return verticalDistance + horizontalDistance;
+  }
+
   public static getRoomPositionKey(x: number, y: number): string {
     return <string>(<unknown>x) + ":" + <string>(<unknown>y);
   }

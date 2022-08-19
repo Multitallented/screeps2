@@ -5,6 +5,8 @@ import {NeedCreep} from "./decisions/need-creep";
 import {GlobalDecisionController} from "./decisions/global-decision-controller";
 import {RoomObjectFixed} from "./room/room-object-fixed";
 import {CreepPrototype} from "./creep/creep-prototype";
+import {SpawnController} from "./structures/spawn-controller";
+import {CreepController} from "./creep/creep-controller";
 
 declare global {
   /*
@@ -22,12 +24,12 @@ declare global {
     roomData: Map<string, GlobalRoomMemory>;
     username?: string;
     debug?: boolean;
+    creepNeeds: Array<NeedCreep>;
   }
 
   interface GlobalRoomMemory {
     sources: SourceMemory;
     posMap: Array<RoomObjectFixed>;
-    creepNeeds: Array<NeedCreep>;
     hostileCreeps: number;
     hostileMelee: number;
     hostileHealer: number;
@@ -80,6 +82,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
     initPrototypes();
     initMemory();
     GlobalDecisionController.generateNeeds();
+
+    CreepController.run();
+    SpawnController.run();
   });
 });
 
@@ -88,6 +93,9 @@ function initPrototypes() {
 }
 
 function initMemory() {
+  if (!Memory.creepNeeds) {
+    Memory.creepNeeds = new Array<NeedCreep>();
+  }
   if (!Memory.roomData) {
     Memory.roomData = <Map<string, GlobalRoomMemory>>{};
   }

@@ -1,19 +1,19 @@
-import {RecycleAction} from "./actions/recycle";
-import {MoveAction} from "./actions/move";
-import {AttackAction} from "./actions/attack";
-import {TravelingAction} from "./actions/traveling";
-import {ClaimControllerAction} from "./actions/claim-controller";
-import {ReserveControllerAction} from "./actions/reserve-controller";
-import {PickupAction} from "./actions/pickup";
-import {RepairAction} from "./actions/repair";
-import {UpgradeControllerAction} from "./actions/upgrade-controller";
-import {BuildAction} from "./actions/build";
-import {TransferAction} from "./actions/transfer";
-import {WithdrawAction} from "./actions/withdraw";
-import {MineEnergyAction} from "./actions/mine-energy";
-import {CreepRoleEnum} from "./creep-role-enum";
-import {CreepRoleTransfer} from "./roles/creep-role-transfer";
-import {CreepRole} from "./creep-role";
+import { RecycleAction } from "./actions/recycle";
+import { MoveAction } from "./actions/move";
+import { AttackAction } from "./actions/attack";
+import { TravelingAction } from "./actions/traveling";
+import { ClaimControllerAction } from "./actions/claim-controller";
+import { ReserveControllerAction } from "./actions/reserve-controller";
+import { PickupAction } from "./actions/pickup";
+import { RepairAction } from "./actions/repair";
+import { UpgradeControllerAction } from "./actions/upgrade-controller";
+import { BuildAction } from "./actions/build";
+import { TransferAction } from "./actions/transfer";
+import { WithdrawAction } from "./actions/withdraw";
+import { MineEnergyAction } from "./actions/mine-energy";
+import { CreepRoleEnum } from "./creep-role-enum";
+import { CreepRoleTransfer } from "./roles/creep-role-transfer";
+import { CreepRole } from "./creep-role";
 
 const setNextAction = function (this: Creep) {
   let creepRole: CreepRole;
