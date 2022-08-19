@@ -8,6 +8,9 @@ export class GlobalDecisionController {
   public static generateNeeds(): void {
     for (const need of Memory.creepNeeds) {
       need.old = true;
+      if (need.filled && !Game.creeps[need.filled]) {
+        need.filled = null;
+      }
     }
     this.scanAllOccupiedRoomsForHostiles();
     this.replaceMissingFixedCreeps();
@@ -112,7 +115,9 @@ export class GlobalDecisionController {
     let i = -1;
     for (const need of Memory.creepNeeds) {
       if (need.creepRole === role && (!positionDependent || (need.pos.x === x && need.pos.y === y))) {
-        need.old = false;
+        if (count > i) {
+          need.old = false;
+        }
         i++;
       }
     }

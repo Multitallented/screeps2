@@ -1,3 +1,8 @@
+import { CreepRoleEnum } from "./creep-role-enum";
+import { CreepRole } from "./creep-role";
+import { CreepRoleTransport } from "./roles/creep-role-transport";
+import { CreepRoleTransfer } from "./roles/creep-role-transfer";
+
 export class CreepController {
   public static run(): void {
     _.forEach(Game.creeps, creep => {
@@ -16,5 +21,15 @@ export class CreepController {
       }
       creep.runAction();
     });
+  }
+
+  public static getCreepRole(role: CreepRoleEnum): CreepRole {
+    switch (role) {
+      case CreepRoleEnum.TRANSPORT:
+        return new CreepRoleTransport();
+      case CreepRoleEnum.TRANSFER:
+      default:
+        return new CreepRoleTransfer();
+    }
   }
 }

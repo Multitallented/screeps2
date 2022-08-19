@@ -1,27 +1,30 @@
 import { RecycleAction } from "./actions/recycle";
 import { MoveAction } from "./actions/move";
 import { AttackAction } from "./actions/attack";
-import { TravelingAction } from "./actions/traveling";
 import { ClaimControllerAction } from "./actions/claim-controller";
+import { CreepRoleEnum } from "./creep-role-enum";
+import { CreepRoleTransfer } from "./roles/creep-role-transfer";
+import { CreepRoleTransport } from "./roles/creep-role-transport";
 import { ReserveControllerAction } from "./actions/reserve-controller";
 import { PickupAction } from "./actions/pickup";
 import { RepairAction } from "./actions/repair";
 import { UpgradeControllerAction } from "./actions/upgrade-controller";
 import { BuildAction } from "./actions/build";
 import { TransferAction } from "./actions/transfer";
+import { TravelingAction } from "./actions/traveling";
 import { WithdrawAction } from "./actions/withdraw";
 import { MineEnergyAction } from "./actions/mine-energy";
-import { CreepRoleEnum } from "./creep-role-enum";
-import { CreepRoleTransfer } from "./roles/creep-role-transfer";
-import { CreepRole } from "./creep-role";
 
 const setNextAction = function (this: Creep) {
-  let creepRole: CreepRole;
   switch (this.memory.role) {
+    case CreepRoleEnum.TRANSPORT:
+      new CreepRoleTransport().doAction(this);
+      break;
     case CreepRoleEnum.TRANSFER:
+      new CreepRoleTransfer().doAction(this);
+      break;
     default:
-      creepRole = new CreepRoleTransfer(this);
-      creepRole.doAction(this);
+      // Do nothing
       break;
   }
 };
