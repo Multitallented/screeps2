@@ -7,6 +7,7 @@ import {RoomObjectFixed} from "./room/room-object-fixed";
 import {CreepPrototype} from "./creep/creep-prototype";
 import {SpawnController} from "./structures/spawn-controller";
 import {CreepController} from "./creep/creep-controller";
+import {RoomController} from "./room/room-controller";
 
 declare global {
   /*
@@ -64,6 +65,10 @@ declare global {
     storage: Array<Id<_HasId>>;
     creepCount: Map<CreepRoleEnum, number>;
     exits?: Map<ExitConstant, boolean>;
+    center?: RoomPosition;
+    radius?: number;
+    sites?: Map<number, Map<string, StructureConstant>>;
+    ramparts?: Map<string, StructureConstant>;
   }
 
   // Syntax for adding proprties to `global` (ex "global.log")
@@ -81,6 +86,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
   profiler.wrap(() => {
     initPrototypes();
     initMemory();
+    RoomController.run();
     GlobalDecisionController.generateNeeds();
 
     CreepController.run();
