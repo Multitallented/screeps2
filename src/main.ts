@@ -69,6 +69,7 @@ declare global {
     radius?: number;
     sites?: Map<number, Map<string, StructureConstant>>;
     ramparts?: Map<string, StructureConstant>;
+    sourceContainers?: Array<RoomPosition>;
   }
 
   // Syntax for adding proprties to `global` (ex "global.log")

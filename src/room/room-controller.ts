@@ -27,7 +27,9 @@ export class RoomController {
       if (!room.memory.center) {
         this.findCenterAndRadius(room);
       }
-      // TODO place source containers
+      if (room.memory.sourceContainers === undefined) {
+        this.placeSourceContainers(room);
+      }
       // TODO plan exit roads
       // TODO plan source roads
       // TODO plan spawns / power spawns
@@ -36,6 +38,20 @@ export class RoomController {
       // TODO plan observer / nuker (level 8)
       // TODO plan links/containers
       // TODO plan extensions
+    });
+  }
+
+  public static placeSourceContainers(room: Room): void {
+    room.memory.sourceContainers = [];
+    _.forEach(room.find(FIND_SOURCES), (source: Source) => {
+      const sourceContainerPos = this.getFirstOpenAdjacentSpot(source.pos);
+      if (sourceContainerPos && room.memory.sourceContainers) {
+        const key = Util.getRoomPositionKey(sourceContainerPos.x, sourceContainerPos.y);
+        (<Map<string, StructureConstant>>(<Map<number, Map<string, StructureConstant>>>room.memory.sites)[0])[key] =
+          STRUCTURE_CONTAINER;
+        (<Map<string, StructureConstant>>room.memory.ramparts)[key] = STRUCTURE_RAMPART;
+        room.memory.sourceContainers.push(sourceContainerPos);
+      }
     });
   }
 
