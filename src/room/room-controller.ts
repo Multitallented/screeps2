@@ -1,5 +1,7 @@
 import { Util } from "../utils/util";
 import _ from "lodash";
+import { RoomObjectFixed } from "./room-object-fixed";
+import { CreepRoleEnum } from "../creep/creep-role-enum";
 
 export class RoomController {
   public static run(): void {
@@ -43,6 +45,7 @@ export class RoomController {
 
   public static placeSourceContainers(room: Room): void {
     room.memory.sourceContainers = [];
+    const roomData = Util.getRoomData(room.name);
     _.forEach(room.find(FIND_SOURCES), (source: Source) => {
       const sourceContainerPos = this.getFirstOpenAdjacentSpot(source.pos);
       if (sourceContainerPos && room.memory.sourceContainers) {
@@ -51,6 +54,15 @@ export class RoomController {
           STRUCTURE_CONTAINER;
         (<Map<string, StructureConstant>>room.memory.ramparts)[key] = STRUCTURE_RAMPART;
         room.memory.sourceContainers.push(sourceContainerPos);
+        const roomObjectFixed = new RoomObjectFixed(
+          sourceContainerPos.x,
+          sourceContainerPos.y,
+          CreepRoleEnum.FIXED_MINER,
+          null,
+          null,
+          1500
+        );
+        roomData.posMap.push(roomObjectFixed);
       }
     });
   }
